@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 
 @Table(name="players")
@@ -17,7 +18,7 @@ import java.util.Date;
 public class Player implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
     private String name;
     private String imageURL;
     @Column(name = "dateofbirth")

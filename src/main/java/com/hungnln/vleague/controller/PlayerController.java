@@ -20,6 +20,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1.0/players")
@@ -45,7 +46,7 @@ public class PlayerController {
         return ResponseEntity.ok().body(responseDTO);
     }
     @GetMapping("/{id}")
-    ResponseEntity<ResponseDTO> getPlayerById(@PathVariable String id){
+    ResponseEntity<ResponseDTO> getPlayerById(@PathVariable UUID id){
         ResponseDTO<PlayerResponse> responseDTO = new ResponseDTO<>();
         PlayerResponse player = playerService.getPlayerById(id);
         responseDTO.setData(player);
@@ -64,7 +65,7 @@ public class PlayerController {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<ResponseDTO> updatePlayer(@PathVariable String id, @RequestBody @Valid PlayerUpdateDTO dto) throws BindException{
+    ResponseEntity<ResponseDTO> updatePlayer(@PathVariable UUID id, @RequestBody @Valid PlayerUpdateDTO dto) throws BindException{
         ResponseDTO<PlayerResponse> responseDTO = new ResponseDTO<>();
         PlayerResponse player = playerService.updatePlayer(id,dto);
         responseDTO.setData(player);
@@ -74,7 +75,7 @@ public class PlayerController {
 
     }
     @DeleteMapping("/{id}")
-    ResponseEntity<ResponseDTO> deletePlayer(@PathVariable String id){
+    ResponseEntity<ResponseDTO> deletePlayer(@PathVariable UUID id){
         ResponseDTO<PlayerResponse> responseDTO = new ResponseDTO<>();
         String msg = playerService.deletePlayer(id);
         responseDTO.setMessage(msg);

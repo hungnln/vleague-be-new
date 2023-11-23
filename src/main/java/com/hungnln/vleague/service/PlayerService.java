@@ -53,7 +53,7 @@ public class PlayerService {
         if(player.isEmpty()) {
             UUID uuid = UUID.randomUUID();
             Player tmp = Player.builder()
-                    .id(String.valueOf(uuid))
+                    .id(uuid)
                     .dateOfBirth(playerCreateDTO.getDateOfBirth())
                     .imageURL(playerCreateDTO.getImageURL())
                     .name(playerCreateDTO.getName())
@@ -66,11 +66,11 @@ public class PlayerService {
             throw new ExistException(PlayerFailMessage.PLAYER_EXIST);
         }
     }
-    public PlayerResponse getPlayerById(String id){
+    public PlayerResponse getPlayerById(UUID id){
         Player player = playerRepository.findPlayerById(id).orElseThrow(()-> new NotFoundException(PlayerFailMessage.PLAYER_NOT_FOUND));
         return modelMapper.map(player,PlayerResponse.class);
     }
-    public String deletePlayer(String id){
+    public String deletePlayer(UUID id){
         boolean exists = playerRepository.existsById(id);
         if(exists){
             playerRepository.deleteById(id);
@@ -80,7 +80,7 @@ public class PlayerService {
         }
 
     }
-    public PlayerResponse updatePlayer(String id, PlayerUpdateDTO playerUpdateDTO){
+    public PlayerResponse updatePlayer(UUID id, PlayerUpdateDTO playerUpdateDTO){
         Player player = playerRepository.findPlayerById(id).orElseThrow(()-> new NotFoundException(PlayerFailMessage.PLAYER_NOT_FOUND));
             player.setName(playerUpdateDTO.getName());
             player.setWeightKg(playerUpdateDTO.getWeightKg());
