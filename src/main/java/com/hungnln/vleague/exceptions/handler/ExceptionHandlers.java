@@ -55,6 +55,13 @@ public class ExceptionHandlers extends RuntimeException{
         dto.setStatus(ResponseStatusDTO.FAILURE);
         return ResponseEntity.badRequest().body(dto);
     }
+    @ExceptionHandler(value = NotValidException.class)
+    public ResponseEntity<Object>notValidException(NotValidException exception) {
+        ResponseDTO dto = new ResponseDTO();
+        dto.setMessage(exception.getMessage());
+        dto.setStatus(ResponseStatusDTO.FAILURE);
+        return ResponseEntity.badRequest().body(dto);
+    }
     @ExceptionHandler(BindException.class)
     public ResponseEntity<Object> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
