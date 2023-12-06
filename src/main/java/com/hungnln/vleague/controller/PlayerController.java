@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1.0/players")
+@RequestMapping("/api/v1/players")
 @Tag(name = "player", description = "player api")
 public class PlayerController {
     public static Logger logger = LoggerFactory.getLogger(PlayerController.class);
@@ -34,7 +34,7 @@ public class PlayerController {
 
     @GetMapping("")
     @Operation(summary ="Get players list", description = "Get players list")
-    ResponseEntity<ListResponseDTO> getAllPlayers(
+    ResponseEntity<ListResponseDTO<PlayerResponse>> getAllPlayers(
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize
     ){
@@ -46,7 +46,7 @@ public class PlayerController {
         return ResponseEntity.ok().body(responseDTO);
     }
     @GetMapping("/{id}")
-    ResponseEntity<ResponseDTO> getPlayerById(@PathVariable UUID id){
+    ResponseEntity<ResponseDTO<PlayerResponse>> getPlayerById(@PathVariable UUID id){
         ResponseDTO<PlayerResponse> responseDTO = new ResponseDTO<>();
         PlayerResponse player = playerService.getPlayerById(id);
         responseDTO.setData(player);
@@ -55,7 +55,7 @@ public class PlayerController {
         return ResponseEntity.ok().body(responseDTO);
     }
     @PostMapping("")
-    ResponseEntity<ResponseDTO> addPlayer(@RequestBody @Valid PlayerCreateDTO dto) throws BindException {
+    ResponseEntity<ResponseDTO<PlayerResponse>> addPlayer(@RequestBody @Valid PlayerCreateDTO dto) throws BindException {
         ResponseDTO<PlayerResponse> responseDTO = new ResponseDTO<>();
         PlayerResponse player = playerService.addPlayer(dto);
         responseDTO.setData(player);
@@ -65,7 +65,7 @@ public class PlayerController {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<ResponseDTO> updatePlayer(@PathVariable UUID id, @RequestBody @Valid PlayerUpdateDTO dto) throws BindException{
+    ResponseEntity<ResponseDTO<PlayerResponse>> updatePlayer(@PathVariable UUID id, @RequestBody @Valid PlayerUpdateDTO dto) throws BindException{
         ResponseDTO<PlayerResponse> responseDTO = new ResponseDTO<>();
         PlayerResponse player = playerService.updatePlayer(id,dto);
         responseDTO.setData(player);
@@ -75,7 +75,7 @@ public class PlayerController {
 
     }
     @DeleteMapping("/{id}")
-    ResponseEntity<ResponseDTO> deletePlayer(@PathVariable UUID id){
+    ResponseEntity<ResponseDTO<PlayerResponse>> deletePlayer(@PathVariable UUID id){
         ResponseDTO<PlayerResponse> responseDTO = new ResponseDTO<>();
         String msg = playerService.deletePlayer(id);
         responseDTO.setMessage(msg);

@@ -9,6 +9,9 @@ import com.hungnln.vleague.entity.Player;
 import com.hungnln.vleague.exceptions.ExistException;
 import com.hungnln.vleague.exceptions.ListEmptyException;
 import com.hungnln.vleague.exceptions.NotFoundException;
+import com.hungnln.vleague.helper.PlayerSpecification;
+import com.hungnln.vleague.helper.SearchCriteria;
+import com.hungnln.vleague.helper.SearchOperation;
 import com.hungnln.vleague.repository.PlayerRepository;
 import com.hungnln.vleague.response.PlayerResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -46,6 +50,15 @@ public class PlayerService {
         }else
             throw new ListEmptyException(PlayerFailMessage.LIST_PLAYER_IS_EMPTY);
         return playerList;
+    }
+    public List<Player> getAllPlayersByPlayerIds(List<UUID> playerIds){
+        List<Specification<Player>> listSpec = new ArrayList<>();
+        for(UUID id : playerIds){
+            PlayerSpecification specification = new PlayerSpecification(new SearchCriteria("id", SearchOperation.EQUALITY,id));
+            listSpec.add(specification);
+        }
+        List<Player> list = playerRepository.findAll(Specification.allOf(listSpec));
+        return list;
     }
 
     public PlayerResponse addPlayer(PlayerCreateDTO playerCreateDTO) {
