@@ -6,10 +6,15 @@ import com.hungnln.vleague.constant.club.ClubFailMessage;
 import com.hungnln.vleague.constant.club.ClubSuccessMessage;
 import com.hungnln.vleague.constant.stadium.StadiumFailMessage;
 import com.hungnln.vleague.entity.Club;
+import com.hungnln.vleague.entity.Player;
 import com.hungnln.vleague.entity.Stadium;
 import com.hungnln.vleague.exceptions.ExistException;
 import com.hungnln.vleague.exceptions.ListEmptyException;
 import com.hungnln.vleague.exceptions.NotFoundException;
+import com.hungnln.vleague.helper.ClubSpecification;
+import com.hungnln.vleague.helper.PlayerSpecification;
+import com.hungnln.vleague.helper.SearchCriteria;
+import com.hungnln.vleague.helper.SearchOperation;
 import com.hungnln.vleague.repository.ClubRepository;
 import com.hungnln.vleague.repository.StadiumRepository;
 import com.hungnln.vleague.response.ClubResponse;
@@ -20,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -100,5 +106,14 @@ public class ClubService {
             clubRepository.save(club);
         }
         return  modelMapper.map(club,ClubResponse.class);
+    }
+    public List<Club> getAllClubsByClubIds(List<UUID> clubIds){
+        List<Specification<Club>> listSpec = new ArrayList<>();
+        for(UUID id : clubIds){
+            ClubSpecification specification = new ClubSpecification(new SearchCriteria("id", SearchOperation.EQUALITY,id));
+            listSpec.add(specification);
+        }
+        List<Club> list = clubRepository.findAll(Specification.allOf(listSpec));
+        return list;
     }
 }

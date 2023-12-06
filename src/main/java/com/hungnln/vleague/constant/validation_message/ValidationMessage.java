@@ -2,8 +2,10 @@ package com.hungnln.vleague.constant.validation_message;
 
 public class ValidationMessage {
     public static final String NUMBER_DUPLICATE_MESSAGE = "Number is duplicate";
-
     public static final String IMAGE_VALID_MESSAGE = "Image must be upload";
+    public static final String THUMBNAIL_VALID_MESSAGE = "Thumbnail image must be upload";
+    public static final String TITLE_VALID_MESSAGE = "Title must be filled";
+    public static final String CONTENT_VALID_MESSAGE = "Content must be filled";
     public static final String HEADQUARTER_VALID_MESSAGE = "Headquarter must be upload";
     public static final String NUMBER_VALID_MESSAGE = "Number must be filled";
     public static final String SALARY_VALID_MESSAGE = "Salary must be filled";
