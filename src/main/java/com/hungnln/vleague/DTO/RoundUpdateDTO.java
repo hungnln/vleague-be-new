@@ -5,17 +5,17 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.util.Date;
+import java.util.UUID;
+
 @Data
 @ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TournamentUpdateDTO {
+public class RoundUpdateDTO {
     @NotEmpty(message = ValidationMessage.NAME_VALID_MESSAGE)
     private String name;
-    @NotNull(message = ValidationMessage.START_DATE_VALID_MESSAGE)
-    private Date start;
-    @NotNull(message = ValidationMessage.END_DATE_VALID_MESSAGE)
-    private Date end;
+
+    @NotNull(message = ValidationMessage.DOB_VALID_MESSAGE)
+    private UUID tournamentId;
 }
