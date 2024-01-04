@@ -8,20 +8,22 @@ import com.hungnln.vleague.constant.player.PlayerFailMessage;
 import com.hungnln.vleague.constant.player_contract.PlayerContractFailMessage;
 import com.hungnln.vleague.constant.player_contract.PlayerContractSuccessMessage;
 import com.hungnln.vleague.constant.stadium.StadiumFailMessage;
+import com.hungnln.vleague.constant.tournament.TournamentFailMessage;
 import com.hungnln.vleague.constant.validation_message.ValidationMessage;
-import com.hungnln.vleague.entity.Club;
-import com.hungnln.vleague.entity.Player;
-import com.hungnln.vleague.entity.PlayerContract;
-import com.hungnln.vleague.entity.Stadium;
+import com.hungnln.vleague.entity.*;
 import com.hungnln.vleague.exceptions.ExistException;
 import com.hungnln.vleague.exceptions.ListEmptyException;
 import com.hungnln.vleague.exceptions.NotFoundException;
 import com.hungnln.vleague.exceptions.NotValidException;
+import com.hungnln.vleague.helper.*;
 import com.hungnln.vleague.repository.ClubRepository;
 import com.hungnln.vleague.repository.PlayerContractRepository;
 import com.hungnln.vleague.repository.PlayerRepository;
 import com.hungnln.vleague.repository.StadiumRepository;
+import com.hungnln.vleague.response.PaginationResponse;
 import com.hungnln.vleague.response.PlayerContractResponse;
+import com.hungnln.vleague.response.ResponseWithTotalPage;
+import com.hungnln.vleague.response.StaffResponse;
 import com.hungnln.vleague.utils.DateUtil;
 import jakarta.persistence.Entity;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -58,9 +61,36 @@ public class PlayerContractService {
     @Autowired
     private DateUtil dateUtil;
 
-    public List<PlayerContractResponse> getAllPlayerContracts(int pageNo,int pageSize){
+    public ResponseWithTotalPage<PlayerContractResponse> getAllPlayerContracts(int pageNo, int pageSize,UUID playerId,UUID clubId,Date start,Date end,Boolean includeEndedContracts){
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.ASC, "id"));
-        Page<PlayerContract> pageResult = playerContractRepository.findAll(pageable);
+        List<Specification<PlayerContract>> specificationList = new ArrayList<>();
+        if(playerId != null){
+            Player player = playerRepository.findById(playerId).orElseThrow(()-> new NotFoundException(PlayerFailMessage.PLAYER_NOT_FOUND));
+            PlayerContractSpecification specification = new PlayerContractSpecification(new SearchCriteria("player", SearchOperation.EQUALITY,player));
+            specificationList.add(specification);
+        }
+        if(clubId != null){
+            Club club = clubRepository.findById(clubId).orElseThrow(()-> new NotFoundException(ClubFailMessage.CLUB_NOT_FOUND));
+            PlayerContractSpecification specification = new PlayerContractSpecification(new SearchCriteria("club", SearchOperation.EQUALITY,club));
+            specificationList.add(specification);
+        }
+        if(includeEndedContracts){
+            if(start != null){
+                PlayerContractSpecification specification = new PlayerContractSpecification(new SearchCriteria("start", SearchOperation.GREATER_THAN,start));
+                specificationList.add(specification);
+            }
+            if(end != null){
+                PlayerContractSpecification specification = new PlayerContractSpecification(new SearchCriteria("end", SearchOperation.LESS_THAN,end));
+                specificationList.add(specification);
+            }
+        }else{
+            Date dateNow = new Date();
+            PlayerContractSpecification specification = new PlayerContractSpecification(new SearchCriteria("start", SearchOperation.GREATER_THAN,dateNow));
+            specificationList.add(specification);
+        }
+
+        Page<PlayerContract> pageResult = playerContractRepository.findAll(Specification.allOf(specificationList),pageable);
+        ResponseWithTotalPage<PlayerContractResponse> response = new ResponseWithTotalPage<>();
         List<PlayerContractResponse> playerContractList = new ArrayList<>();
         if(pageResult.hasContent()) {
             for (PlayerContract playerContract :
@@ -68,11 +98,16 @@ public class PlayerContractService {
                 PlayerContractResponse playerContractResponse = modelMapper.map(playerContract, PlayerContractResponse.class);
                 playerContractList.add(playerContractResponse);
             }
-        }else{
-            throw new ListEmptyException(PlayerContractFailMessage.LIST_PLAYER_CONTRACT_IS_EMPTY);
-
         }
-        return playerContractList;
+        response.setData(playerContractList);
+        PaginationResponse paginationResponse = PaginationResponse.builder()
+                .pageIndex(pageResult.getNumber())
+                .pageSize(pageResult.getSize())
+                .totalCount((int) pageResult.getTotalElements())
+                .totalPage(pageResult.getTotalPages())
+                .build();
+        response.setPagination(paginationResponse);
+        return response;
     }
 
     @SneakyThrows
@@ -138,7 +173,7 @@ public class PlayerContractService {
         PlayerContract playerContract = playerContractRepository.findPlayerContractById(id).orElseThrow(()-> new NotFoundException(PlayerContractFailMessage.PLAYER_CONTRACT_NOT_FOUND));
 //        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 //        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        if(playerContract.getStart().before(playerContractUpdateDTO.getEnd())){
+        if(!playerContract.getStart().before(playerContractUpdateDTO.getEnd())){
             throw new NotValidException(ValidationMessage.DATE_VALID_MESSAGE);
         }
         String dateStartString = dateUtil.formatDate(playerContract.getStart());
@@ -149,10 +184,10 @@ public class PlayerContractService {
                         dateEndString,
                         playerContract.getPlayer().getId()) ;
       if(playerContractList.size() == 1 ) {
-          if(playerContractList.contains(playerContract)){
+          if(!playerContractList.contains(playerContract)){
               throw new NotFoundException(PlayerContractFailMessage.PLAYER_CONTRACT_NOT_FOUND);
           }
-          boolean numberValid = playerContractRepository.countAllByStartGreaterThanEqualAndEndLessThanEqual(dateStartString,dateEndString,playerContractUpdateDTO.getNumber()) == 0;
+          boolean numberValid = playerContractRepository.countAllByStartGreaterThanEqualAndEndLessThanEqual(dateStartString,dateEndString,playerContractUpdateDTO.getNumber()) == 1;
           if(!numberValid){
               throw new NotValidException(ValidationMessage.NUMBER_DUPLICATE_MESSAGE);
           }
@@ -163,7 +198,7 @@ public class PlayerContractService {
           playerContractRepository.save(playerContract);
           return modelMapper.map(playerContract, PlayerContractResponse.class);
         }else {
-            throw new ExistException(PlayerContractFailMessage.PLAYER_CONTRACT_DATE_END_);
+            throw new ExistException(PlayerContractFailMessage.PLAYER_CONTRACT_NOT_FOUND);
         }
     }
 }

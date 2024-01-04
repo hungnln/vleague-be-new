@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/round")
+@RequestMapping("/api/v1/rounds")
 @Tag(name = "round", description = "round api")
 public class RoundController {
     public static Logger logger = LoggerFactory.getLogger(RoundController.class);
@@ -35,13 +35,13 @@ public class RoundController {
     @GetMapping("")
     @Operation(summary ="Get round list", description = "Get round list")
     ResponseEntity<ResponseDTO<ResponseWithTotalPage<RoundResponse>>> getAllRound(
-            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "0") int pageIndex,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "") UUID tournamentId,
             @RequestParam(defaultValue = "") String name
     ){
         ResponseDTO<ResponseWithTotalPage<RoundResponse>> responseDTO = new ResponseDTO<>();
-        ResponseWithTotalPage<RoundResponse> list = roundService.getAllRound(pageNo,pageSize,name,tournamentId);
+        ResponseWithTotalPage<RoundResponse> list = roundService.getAllRound(pageIndex,pageSize,name,tournamentId);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         responseDTO.setData(list);
         responseDTO.setMessage(RoundSuccessMessage.GET_ALL_SUCCESSFUL);

@@ -2,6 +2,7 @@ package com.hungnln.vleague.DTO;
 
 import com.hungnln.vleague.constant.validation_message.ValidationMessage;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.UUID;
@@ -21,6 +22,6 @@ public class ClubUpdateDTO {
     @NotEmpty(message = ValidationMessage.IMAGE_VALID_MESSAGE)
     private String imageURL;
 
-    @NotEmpty(message = ValidationMessage.IMAGE_VALID_MESSAGE)
-    private UUID stadiumID;
+    @NotNull(message = ValidationMessage.IMAGE_VALID_MESSAGE)
+    private UUID stadiumId;
 }

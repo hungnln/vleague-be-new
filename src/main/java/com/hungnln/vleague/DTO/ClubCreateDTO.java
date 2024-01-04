@@ -23,5 +23,5 @@ public class ClubCreateDTO {
     private String imageURL;
 
     @NotNull(message = ValidationMessage.IMAGE_VALID_MESSAGE)
-    private UUID stadiumID;
+    private UUID stadiumId;
 }
