@@ -10,9 +10,6 @@ import java.util.List;
 @ToString
 @Builder
 public class ResponseWithTotalPage<T> {
-    private int totalPage;
-    private int totalCount;
-    private int pageSize;
-    private int pageIndex;
-    private List<T> responseList;
+    private PaginationResponse pagination;
+    private List<T> data;
 }

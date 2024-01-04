@@ -18,6 +18,8 @@ import com.hungnln.vleague.helper.SearchOperation;
 import com.hungnln.vleague.repository.ClubRepository;
 import com.hungnln.vleague.repository.StadiumRepository;
 import com.hungnln.vleague.response.ClubResponse;
+import com.hungnln.vleague.response.PaginationResponse;
+import com.hungnln.vleague.response.ResponseWithTotalPage;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +45,10 @@ public class ClubService {
 
     private final ModelMapper modelMapper;
 
-    public List<ClubResponse> getAllClubs(int pageNo,int pageSize){
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.ASC, "id"));
+    public ResponseWithTotalPage<ClubResponse> getAllClubs(int pageNumber, int pageSize){
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.ASC, "id"));
         Page<Club> pageResult = clubRepository.findAll(pageable);
+        ResponseWithTotalPage<ClubResponse> response = new ResponseWithTotalPage<>();
         List<ClubResponse> clubList = new ArrayList<>();
         if(pageResult.hasContent()) {
             for (Club club :
@@ -53,15 +56,20 @@ public class ClubService {
                 ClubResponse clubResponse = modelMapper.map(club, ClubResponse.class);
                 clubList.add(clubResponse);
             }
-        }else{
-            throw new ListEmptyException(ClubFailMessage.LIST_CLUB_IS_EMPTY);
-
         }
-        return clubList;
+        response.setData(clubList);
+        PaginationResponse paginationResponse = PaginationResponse.builder()
+                .pageIndex(pageResult.getNumber())
+                .pageSize(pageResult.getSize())
+                .totalCount((int) pageResult.getTotalElements())
+                .totalPage(pageResult.getTotalPages())
+                .build();
+        response.setPagination(paginationResponse);
+        return response;
     }
 
     public ClubResponse addClub(ClubCreateDTO clubCreateDTO) {
-        Optional<Stadium> stadium = stadiumRepository.findStadiumById(clubCreateDTO.getStadiumID());
+        Optional<Stadium> stadium = stadiumRepository.findStadiumById(clubCreateDTO.getStadiumId());
         if (!stadium.isPresent()){
             throw new NotFoundException(StadiumFailMessage.STADIUM_NOT_FOUND);
         }
@@ -97,7 +105,7 @@ public class ClubService {
     }
     public ClubResponse updateClub(UUID id, ClubUpdateDTO clubUpdateDTO){
         Club club = clubRepository.findClubById(id).orElseThrow(()-> new NotFoundException(ClubFailMessage.CLUB_NOT_FOUND));
-        Optional<Stadium> stadium = stadiumRepository.findStadiumById(clubUpdateDTO.getStadiumID());
+        Optional<Stadium> stadium = stadiumRepository.findStadiumById(clubUpdateDTO.getStadiumId());
         if(stadium.isPresent()){
             club.setName(clubUpdateDTO.getName());
             club.setHeadQuarter(clubUpdateDTO.getHeadQuarter());

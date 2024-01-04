@@ -16,6 +16,7 @@ import com.hungnln.vleague.helper.RoundSpecification;
 import com.hungnln.vleague.helper.SearchCriteria;
 import com.hungnln.vleague.helper.SearchOperation;
 import com.hungnln.vleague.repository.*;
+import com.hungnln.vleague.response.PaginationResponse;
 import com.hungnln.vleague.response.RoundResponse;
 import com.hungnln.vleague.response.ResponseWithTotalPage;
 import lombok.RequiredArgsConstructor;
@@ -65,11 +66,15 @@ public class RoundService {
                 RoundResponse roundResponse = modelMapper.map(round, RoundResponse.class);
                 roundList.add(roundResponse);
             }
-            response.setResponseList(roundList);
-            response.setPageSize(pageResult.getSize());
-            response.setPageIndex(pageResult.getNumber());
-            response.setTotalCount((int) pageResult.getTotalElements());
-            response.setTotalPage(pageResult.getTotalPages());
+            response.setData(roundList);
+            PaginationResponse paginationResponse = PaginationResponse.builder()
+                    .pageIndex(pageResult.getNumber())
+                    .pageSize(pageResult.getSize())
+                    .totalCount((int) pageResult.getTotalElements())
+                    .totalPage(pageResult.getTotalPages())
+                    .build();
+            response.setPagination(paginationResponse);
+
         }else{
             throw new ListEmptyException(RoundFailMessage.LIST_ROUND_IS_EMPTY);
         }

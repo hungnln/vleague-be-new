@@ -1,7 +1,13 @@
 package com.hungnln.vleague.constant.validation_message;
 
 public class ValidationMessage {
+    public static final String HOME_CLUB_VALID_MESSAGE = "Home club must be filled";
+    public static final String AWAY_CLUB_VALID_MESSAGE = "Away club must be filled";
+    public static final String STADIUM_VALID_MESSAGE = "Stadium must be filled";
+    public static final String ROUND_VALID_MESSAGE = "Round must be filled";
+
     public static final String NUMBER_DUPLICATE_MESSAGE = "Number is duplicate";
+
     public static final String IMAGE_VALID_MESSAGE = "Image must be upload";
     public static final String THUMBNAIL_VALID_MESSAGE = "Thumbnail image must be upload";
     public static final String TITLE_VALID_MESSAGE = "Title must be filled";

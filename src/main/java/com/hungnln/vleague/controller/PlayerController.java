@@ -8,6 +8,7 @@ import com.hungnln.vleague.repository.PlayerRepository;
 import com.hungnln.vleague.response.ListResponseDTO;
 import com.hungnln.vleague.response.PlayerResponse;
 import com.hungnln.vleague.response.ResponseDTO;
+import com.hungnln.vleague.response.ResponseWithTotalPage;
 import com.hungnln.vleague.service.PlayerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,12 +35,12 @@ public class PlayerController {
 
     @GetMapping("")
     @Operation(summary ="Get players list", description = "Get players list")
-    ResponseEntity<ListResponseDTO<PlayerResponse>> getAllPlayers(
+    ResponseEntity<ResponseDTO<ResponseWithTotalPage<PlayerResponse>>> getAllPlayers(
             @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize
+            @RequestParam(defaultValue = "20") int pageSize
     ){
-        ListResponseDTO<PlayerResponse> responseDTO = new ListResponseDTO<>();
-        List<PlayerResponse> list = playerService.getAllPlayers(pageNo, pageSize);
+        ResponseDTO<ResponseWithTotalPage<PlayerResponse>> responseDTO = new ResponseDTO<>();
+        ResponseWithTotalPage<PlayerResponse> list = playerService.getAllPlayers(pageNo, pageSize);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         responseDTO.setData(list);
         responseDTO.setMessage(PlayerSuccessMessage.GET_PLAYER_SUCCESSFULL);

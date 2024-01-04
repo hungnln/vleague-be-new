@@ -32,7 +32,6 @@ public class PlayerContractCreateDTO {
     @Positive
     private float salary;
 
-    @NotEmpty(message = ValidationMessage.SALARY_VALID_MESSAGE)
     private String description;
 
     @NotNull(message = ValidationMessage.START_DATE_VALID_MESSAGE)

@@ -9,6 +9,7 @@ import com.hungnln.vleague.repository.ClubRepository;
 import com.hungnln.vleague.response.ListResponseDTO;
 import com.hungnln.vleague.response.ResponseDTO;
 import com.hungnln.vleague.response.ClubResponse;
+import com.hungnln.vleague.response.ResponseWithTotalPage;
 import com.hungnln.vleague.service.ClubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1.0/clubs")
+@RequestMapping("/api/v1/clubs")
 @Tag(name = "club", description = "club api")
 public class ClubController {
     @Autowired
@@ -39,12 +40,12 @@ public class ClubController {
 
     @GetMapping("")
     @Operation(summary = "Get clubs list", description = "Get clubs list")
-    ResponseEntity<ListResponseDTO<ClubResponse>> getAllClubs(
-            @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize
+    ResponseEntity<ResponseDTO<ResponseWithTotalPage<ClubResponse>>> getAllClubs(
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "20") int pageSize
     ) {
-        ListResponseDTO<ClubResponse> responseDTO = new ListResponseDTO<>();
-        List<ClubResponse> list = clubService.getAllClubs(pageNo,pageSize);
+        ResponseDTO<ResponseWithTotalPage<ClubResponse>> responseDTO = new ResponseDTO<>();
+        ResponseWithTotalPage<ClubResponse> list = clubService.getAllClubs(pageIndex,pageSize);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         responseDTO.setData(list);
         responseDTO.setMessage(ClubSuccessMessage.GET_ALL_SUCCESSFULL);
@@ -82,7 +83,7 @@ public class ClubController {
     }
 
     @DeleteMapping("/{id}")
-    ResponseEntity<ResponseDTO> deleteClub(@PathVariable UUID id) {
+    ResponseEntity<ResponseDTO<ClubResponse>> deleteClub(@PathVariable UUID id) {
         ResponseDTO<ClubResponse> responseDTO = new ResponseDTO<>();
         String msg = clubService.deleteClub(id);
         responseDTO.setMessage(msg);

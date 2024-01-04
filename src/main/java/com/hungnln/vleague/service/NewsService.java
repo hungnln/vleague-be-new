@@ -15,6 +15,7 @@ import com.hungnln.vleague.helper.SearchCriteria;
 import com.hungnln.vleague.helper.SearchOperation;
 import com.hungnln.vleague.repository.*;
 import com.hungnln.vleague.response.NewsResponse;
+import com.hungnln.vleague.response.PaginationResponse;
 import com.hungnln.vleague.response.ResponseWithTotalPage;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -78,11 +79,14 @@ public class NewsService {
                 NewsResponse newsResponse = modelMapper.map(news, NewsResponse.class);
                 newsList.add(newsResponse);
             }
-            response.setResponseList(newsList);
-            response.setPageSize(pageResult.getSize());
-            response.setPageIndex(pageResult.getNumber());
-            response.setTotalCount((int) pageResult.getTotalElements());
-            response.setTotalPage(pageResult.getTotalPages());
+            response.setData(newsList);
+            PaginationResponse paginationResponse = PaginationResponse.builder()
+                    .pageIndex(pageResult.getNumber())
+                    .pageSize(pageResult.getSize())
+                    .totalCount((int) pageResult.getTotalElements())
+                    .totalPage(pageResult.getTotalPages())
+                    .build();
+            response.setPagination(paginationResponse);
         }else{
             throw new ListEmptyException(ClubFailMessage.LIST_CLUB_IS_EMPTY);
         }

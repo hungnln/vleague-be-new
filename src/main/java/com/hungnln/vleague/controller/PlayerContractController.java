@@ -8,6 +8,7 @@ import com.hungnln.vleague.repository.PlayerContractRepository;
 import com.hungnln.vleague.response.ListResponseDTO;
 import com.hungnln.vleague.response.PlayerContractResponse;
 import com.hungnln.vleague.response.ResponseDTO;
+import com.hungnln.vleague.response.ResponseWithTotalPage;
 import com.hungnln.vleague.service.PlayerContractService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,11 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1.0/players-contracts")
+@RequestMapping("/api/v1/player-contracts")
 @Tag(name = "player contract", description = "player api")
 public class PlayerContractController {
     public static Logger logger = LoggerFactory.getLogger(PlayerContractController.class);
@@ -34,12 +36,18 @@ public class PlayerContractController {
 
     @GetMapping("")
     @Operation(summary ="Get players contract list", description = "Get players contract list")
-    ResponseEntity<ListResponseDTO<PlayerContractResponse>> getAllPlayerContracts(
+    ResponseEntity<ResponseDTO<ResponseWithTotalPage<PlayerContractResponse>>> getAllPlayerContracts(
             @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) UUID playerId,
+            @RequestParam(required = false) UUID clubId,
+            @RequestParam(required = false) Date start,
+            @RequestParam(required = false) Date end,
+            @RequestParam(defaultValue = "true") Boolean includeEndedContracts
+
     ){
-        ListResponseDTO<PlayerContractResponse> responseDTO = new ListResponseDTO<>();
-        List<PlayerContractResponse> list = playerContractService.getAllPlayerContracts(pageNo, pageSize);
+        ResponseDTO<ResponseWithTotalPage<PlayerContractResponse>> responseDTO = new ResponseDTO<>();
+        ResponseWithTotalPage<PlayerContractResponse> list = playerContractService.getAllPlayerContracts(pageNo, pageSize,playerId,clubId,start,end,includeEndedContracts);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         responseDTO.setData(list);
         responseDTO.setMessage(PlayerContractSuccessMessage.GET_PLAYER_CONTRACT_SUCCESSFUL);

@@ -1,6 +1,7 @@
 package com.hungnln.vleague.DTO;
 
 import com.hungnln.vleague.constant.validation_message.ValidationMessage;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -14,16 +15,16 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PlayerContractUpdateDTO {
-    @NotEmpty(message = ValidationMessage.NAME_VALID_MESSAGE)
     private String description;
 
-    @NotEmpty(message = ValidationMessage.NUMBER_VALID_MESSAGE)
+    @NotNull(message = ValidationMessage.NUMBER_VALID_MESSAGE)
+    @Min(0)
     private int number;
 
-    @NotEmpty(message = ValidationMessage.SALARY_VALID_MESSAGE)
+    @NotNull(message = ValidationMessage.SALARY_VALID_MESSAGE)
     private float salary;
 
-    @NotEmpty(message = ValidationMessage.END_DATE_VALID_MESSAGE)
+    @NotNull(message = ValidationMessage.END_DATE_VALID_MESSAGE)
     private Date end;
 
 }
