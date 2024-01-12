@@ -50,4 +50,4 @@ jobs:
           app-name: 'vleague'
           slot-name: 'Production'
           package: '*.jar'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8086862C96B746678217AA42D7CCBF38 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7E96A3C49D9341258ECA9D2386ECAB1F }}
