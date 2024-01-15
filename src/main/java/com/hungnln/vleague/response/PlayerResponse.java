@@ -1,5 +1,6 @@
 package com.hungnln.vleague.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,8 @@ public class PlayerResponse {
     private UUID id;
     private String name;
     private String imageURL;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date dateOfBirth;
-    private float heightCm;
-    private float weightKg;
+    private int heightCm;
+    private int weightKg;
 }
