@@ -1,5 +1,6 @@
 package com.hungnln.vleague.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hungnln.vleague.entity.*;
 import lombok.*;
 
@@ -14,7 +15,9 @@ import java.util.UUID;
 @Builder
 public class MatchResponse {
     private UUID id;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     private UUID homeClubId;
     private Club homeClub;

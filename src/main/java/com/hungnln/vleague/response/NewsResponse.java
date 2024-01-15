@@ -1,5 +1,6 @@
 package com.hungnln.vleague.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hungnln.vleague.entity.Club;
 import com.hungnln.vleague.entity.Player;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class NewsResponse {
     private String title;
     private String thumbnailImageURL;
     private String content;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdAt;
 //    private String abc;
 //    private List<Club> xyz;

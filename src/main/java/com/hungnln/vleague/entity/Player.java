@@ -3,6 +3,8 @@ package com.hungnln.vleague.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -23,6 +25,7 @@ public class Player implements Serializable {
     private UUID id;
     private String name;
     private String imageURL;
+    @Temporal(TemporalType.DATE)
     @Column(name = "dateofbirth")
     private Date dateOfBirth;
     @Column(name = "heightcm")
