@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,4 +33,7 @@ public class StaffMatchParticipation implements Serializable {
     private Match match;
     @Column(name = "role")
     private StaffMatchRole role;
+    @ManyToMany(mappedBy = "staffMatchParticipations",cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Collection<MatchActivity> activities;
 }

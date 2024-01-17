@@ -31,6 +31,8 @@ public class PlayerContract implements Serializable {
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "clubid")
     private Club club;
+//    @Column(name = "clubid",insertable=false, updatable=false)
+//    private UUID clubId;
     private int number;
     private float salary;
     @Temporal(TemporalType.DATE)
