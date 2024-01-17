@@ -30,31 +30,32 @@ public class  MatchActivity {
 //    @Temporal(TemporalType.TIME)
 //    @Column(name = "time")
 //    private Date time;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "matchactivityplayermatchparticipation",
             joinColumns = @JoinColumn(name = "activitiesid"),
             inverseJoinColumns = {
-                    @JoinColumn(name = "playerinvolvedplayercontractid"),
-                    @JoinColumn(name = "playerinvolvedmatchid")
+                    @JoinColumn(name = "playerinvolvedmatchid"),
+                    @JoinColumn(name = "playerinvolvedplayercontractid")
+
             })
     private Collection<PlayerMatchParticipation> playerMatchParticipations;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "matchactivitystaffmatchparticipation",
             joinColumns = @JoinColumn(name = "activitiesid"),
             inverseJoinColumns = {
-                    @JoinColumn(name = "staffinvolvedstaffcontractid"),
-                    @JoinColumn(name = "staffinvolvedmatchid")
+                    @JoinColumn(name = "staffinvolvedmatchid"),
+                    @JoinColumn(name = "staffinvolvedstaffcontractid")
             })
     private Collection<StaffMatchParticipation> staffMatchParticipations;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "matchactivityrefereematchparticipation",
             joinColumns = @JoinColumn(name = "activitiesid"),
             inverseJoinColumns = {
-                    @JoinColumn(name = "refereeinvolvedrefereeid"),
-                    @JoinColumn(name = "refereeinvolvedmatchid")
+                    @JoinColumn(name = "refereeinvolvedmatchid"),
+                    @JoinColumn(name = "refereeinvolvedrefereeid")
             })
     private Collection<RefereeMatchParticipation> refereeMatchParticipations;
 }

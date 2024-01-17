@@ -11,6 +11,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,4 +38,7 @@ public class PlayerMatchParticipation implements Serializable {
     private boolean inLineups;
     @Column(name = "role")
     private PlayerMatchRole role;
+    @ManyToMany(mappedBy = "playerMatchParticipations",cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Collection<MatchActivity> activities;
 }
