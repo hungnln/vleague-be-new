@@ -1,6 +1,6 @@
 package com.hungnln.vleague.helper;
 
-import com.hungnln.vleague.entity.Match;
+import com.hungnln.vleague.entity.Referee;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -8,32 +8,23 @@ import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
 @AllArgsConstructor
-public class MatchSpecification implements Specification<Match> {
+public class RefereeSpecification implements Specification<Referee> {
     private SearchCriteria criteria;
 
     @Override
-    public Specification<Match> and(Specification<Match> other) {
+    public Specification<Referee> and(Specification<Referee> other) {
         return Specification.super.and(other);
     }
 
     @Override
-    public Specification<Match> or(Specification<Match> other) {
+    public Specification<Referee> or(Specification<Referee> other) {
         return Specification.super.or(other);
     }
 
     @Override
-    public Predicate toPredicate(Root<Match> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(Root<Referee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         switch (criteria.getOperation()) {
-            case GREATER_THAN_OR_EQUAL_DATE:
-                return criteriaBuilder.greaterThanOrEqualTo(root.get(criteria.getKey()),(Timestamp) criteria.getValue());
-            case LESS_THAN_OR_EQUAL_DATE:
-                return criteriaBuilder.lessThanOrEqualTo(root.get(criteria.getKey()), (Date) criteria.getValue());
-            case ISMEMBER:
-                return criteriaBuilder.isMember(criteria.getValue(), root.get(criteria.getKey()));
             case EQUALITY:
                 return criteriaBuilder.equal(root.get(criteria.getKey()), criteria.getValue());
             case NEGATION:

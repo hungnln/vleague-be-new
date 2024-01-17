@@ -2,6 +2,7 @@ package com.hungnln.vleague.controller;
 
 import com.hungnln.vleague.DTO.MatchActivityCreateDTO;
 import com.hungnln.vleague.DTO.MatchCreateDTO;
+import com.hungnln.vleague.DTO.MatchLineupsCreateDTO;
 import com.hungnln.vleague.DTO.MatchUpdateDTO;
 import com.hungnln.vleague.constant.response.ResponseStatusDTO;
 import com.hungnln.vleague.constant.match.MatchSuccessMessage;
@@ -57,16 +58,16 @@ public class MatchController {
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         return ResponseEntity.ok().body(responseDTO);
     }
-//    @PutMapping("/{id}")
-//    @Operation(summary ="Update match", description = "Update match")
-//    ResponseEntity<ResponseDTO<MatchResponse>> updateMatch(@PathVariable UUID id,@RequestBody @Valid MatchUpdateDTO dto) throws BindException {
-//        ResponseDTO<MatchResponse> responseDTO = new ResponseDTO<>();
-//        MatchResponse matchResponse = matchService.updateMatch(id,dto);
-//        responseDTO.setData(matchResponse);
-//        responseDTO.setMessage(MatchSuccessMessage.UPDATE_ROUND_SUCCESSFUL);
-//        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
-//        return ResponseEntity.ok().body(responseDTO);
-//    }
+    @PutMapping("/{id}")
+    @Operation(summary ="Add match lineups", description = "Add match lineups")
+    ResponseEntity<ResponseDTO<MatchParticipationResponse>> updateMatch(@PathVariable UUID id,@RequestBody @Valid MatchLineupsCreateDTO dto) throws BindException {
+        ResponseDTO<MatchParticipationResponse> responseDTO = new ResponseDTO<>();
+        MatchParticipationResponse matchResponse = matchService.addMatchLineups(id,dto);
+        responseDTO.setData(matchResponse);
+        responseDTO.setMessage(MatchSuccessMessage.GET_MATCH_SUCCESSFUL);
+        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+        return ResponseEntity.ok().body(responseDTO);
+    }
     @GetMapping("/{id}")
     @Operation(summary ="Get match by id", description = "Get match by id")
     ResponseEntity<ResponseDTO<MatchResponse>> findMatch(@PathVariable UUID id){
