@@ -75,9 +75,8 @@ public class PlayerContractService {
             specificationList.add(specification);
         }
         if(matchDate !=null){
-            String matchDateString = dateUtil.formatInputDate(matchDate);
-            Date matchDateParse=dateUtil.parseDateTime(matchDateString);
-            Timestamp matchDateTimestamp= new Timestamp(matchDateParse.getTime());
+            Date date = dateUtil.parseDateTime(matchDate);
+            Timestamp matchDateTimestamp= new Timestamp(date.getTime());
             PlayerContractSpecification specificationStart = new PlayerContractSpecification(new SearchCriteria("start", SearchOperation.LESS_THAN_OR_EQUAL_DATE,matchDateTimestamp));
             PlayerContractSpecification specificationEnd = new PlayerContractSpecification(new SearchCriteria("end", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,matchDateTimestamp));
             specificationList.add(specificationStart);

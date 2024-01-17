@@ -8,14 +8,14 @@ import com.hungnln.vleague.constant.staff_contract.StaffContractFailMessage;
 import com.hungnln.vleague.constant.staff_contract.StaffContractSuccessMessage;
 import com.hungnln.vleague.constant.validation_message.ValidationMessage;
 import com.hungnln.vleague.entity.Club;
-import com.hungnln.vleague.entity.PlayerContract;
+import com.hungnln.vleague.entity.StaffContract;
 import com.hungnln.vleague.entity.Staff;
 import com.hungnln.vleague.entity.StaffContract;
 import com.hungnln.vleague.exceptions.ExistException;
 import com.hungnln.vleague.exceptions.ListEmptyException;
 import com.hungnln.vleague.exceptions.NotFoundException;
 import com.hungnln.vleague.exceptions.NotValidException;
-import com.hungnln.vleague.helper.PlayerContractSpecification;
+import com.hungnln.vleague.helper.StaffContractSpecification;
 import com.hungnln.vleague.helper.SearchCriteria;
 import com.hungnln.vleague.helper.SearchOperation;
 import com.hungnln.vleague.helper.StaffContractSpecification;
@@ -38,6 +38,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -54,7 +55,7 @@ public class StaffContractService {
     @Autowired
     private DateUtil dateUtil;
 
-    public ResponseWithTotalPage<StaffContractResponse> getAllStaffContracts(int pageNo, int pageSize, UUID clubId, Date start, Date end, Boolean includeEndedContracts){
+    public ResponseWithTotalPage<StaffContractResponse> getAllStaffContracts(int pageNo, int pageSize, UUID clubId, String start, String end, Boolean includeEndedContracts,String matchDate){
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(Sort.Direction.ASC, "id"));
         ResponseWithTotalPage<StaffContractResponse> response = new ResponseWithTotalPage<>();
         List<StaffContractResponse> staffContractList = new ArrayList<>();
@@ -64,19 +65,61 @@ public class StaffContractService {
             StaffContractSpecification specification = new StaffContractSpecification(new SearchCriteria("club", SearchOperation.EQUALITY,club));
             specificationList.add(specification);
         }
-        if(includeEndedContracts){
-            if(start != null){
-                StaffContractSpecification specification = new StaffContractSpecification(new SearchCriteria("start", SearchOperation.GREATER_THAN,start));
-                specificationList.add(specification);
-            }
-            if(end != null){
-                StaffContractSpecification specification = new StaffContractSpecification(new SearchCriteria("end", SearchOperation.LESS_THAN,end));
-                specificationList.add(specification);
-            }
-        }else{
+        if(matchDate !=null){
+            Date date = dateUtil.parseDateTime(matchDate);
+            Timestamp matchDateTimestamp= new Timestamp(date.getTime());
+            StaffContractSpecification specificationStart = new StaffContractSpecification(new SearchCriteria("start", SearchOperation.LESS_THAN_OR_EQUAL_DATE,matchDateTimestamp));
+            StaffContractSpecification specificationEnd = new StaffContractSpecification(new SearchCriteria("end", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,matchDateTimestamp));
+            specificationList.add(specificationStart);
+            specificationList.add(specificationEnd);
+        }
+        if(start != null && end != null){
+            String startDateString = dateUtil.formatInputDate(start);
+            Date startDate=dateUtil.parseDateTime(startDateString);
+            String endDateString = dateUtil.formatInputDate(end);
+            Date endDate=dateUtil.parseDateTime(endDateString);
+            Timestamp timestampStart= new Timestamp(startDate.getTime());
+            Timestamp timestampEnd= new Timestamp(endDate.getTime());
+            StaffContractSpecification specificationStart = new StaffContractSpecification(new SearchCriteria("start", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,timestampStart));
+            StaffContractSpecification specificationEnd = new StaffContractSpecification(new SearchCriteria("end", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,timestampEnd));
+            specificationList.add(specificationStart);
+            specificationList.add(specificationEnd);
+        }
+        else if(start != null){
+            String startDateString = dateUtil.formatInputDate(start);
+            Date startDate=dateUtil.parseDateTime(startDateString);
             Date dateNow = new Date();
-            StaffContractSpecification specification = new StaffContractSpecification(new SearchCriteria("start", SearchOperation.GREATER_THAN,dateNow));
-            specificationList.add(specification);
+            Timestamp timestampStart= new Timestamp(startDate.getTime());
+            Timestamp timestampNow= new Timestamp(dateNow.getTime());
+            StaffContractSpecification specificationStart = new StaffContractSpecification(new SearchCriteria("start", SearchOperation.LESS_THAN_OR_EQUAL_DATE,timestampStart));
+            StaffContractSpecification specificationEnd = new StaffContractSpecification(new SearchCriteria("end", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,timestampStart));
+            StaffContractSpecification specificationNow = new StaffContractSpecification(new SearchCriteria("end", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,timestampNow));
+
+            specificationList.add(specificationStart);
+            specificationList.add(specificationEnd);
+            specificationList.add(specificationNow);
+
+        }
+        else if(end != null){
+            String endDateString = dateUtil.formatInputDate(end);
+            Date endDate=dateUtil.parseDateTime(endDateString);
+            Date dateNow = new Date();
+            Timestamp timestampEnd= new Timestamp(endDate.getTime());
+            Timestamp timestampNow= new Timestamp(dateNow.getTime());
+            StaffContractSpecification specificationStart = new StaffContractSpecification(new SearchCriteria("start", SearchOperation.LESS_THAN_OR_EQUAL_DATE,timestampEnd));
+            StaffContractSpecification specificationEnd = new StaffContractSpecification(new SearchCriteria("end", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,timestampEnd));
+            StaffContractSpecification specificationNow = new StaffContractSpecification(new SearchCriteria("end", SearchOperation.GREATER_THAN_OR_EQUAL_DATE,timestampNow));
+
+            specificationList.add(specificationStart);
+            specificationList.add(specificationEnd);
+            specificationList.add(specificationNow);
+        }
+        else{
+            if(!includeEndedContracts){
+                Date dateNow = new Date();
+                StaffContractSpecification specification = new StaffContractSpecification(new SearchCriteria("start", SearchOperation.GREATER_THAN_DATE,dateNow));
+                specificationList.add(specification);
+            }
         }
         Page<StaffContract> pageResult = staffContractRepository.findAll(Specification.allOf(specificationList),pageable);
         if(pageResult.hasContent()) {

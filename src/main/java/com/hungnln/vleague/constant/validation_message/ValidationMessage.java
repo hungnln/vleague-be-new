@@ -15,16 +15,19 @@ public class ValidationMessage {
     public static final String HEADQUARTER_VALID_MESSAGE = "Headquarter must be upload";
     public static final String NUMBER_VALID_MESSAGE = "Number must be filled";
     public static final String SALARY_VALID_MESSAGE = "Salary must be filled";
-    public static final String PHONE_SIZE_VALID_MESSAGE = "Phone size must 10 number";
+    public static final String MATCHID_VALID_MESSAGE = "Match Id must be filled ";
     public static final String PHONE_NOT_EMPTY_VALID_MESSAGE = "Phone must be filled";
     public static final String NAME_VALID_MESSAGE = "Name must be filled";
     public static final String GENDER_VALID_MESSAGE = "Gender must be filled";
-    public static final String PURPOSE_VALID_MESSAGE = "Purpose must be filled";
     public static final String DATE_VALID_MESSAGE = "Date must be filled";
-    public static final String INTERVIEW_TYPE_VALID_MESSAGE = "Interview type must be chosen";
+    public static final String STAFF_CONTRACT_VALID_MESSAGE = "Staff contract must be filled";
     public static final String DOB_VALID_MESSAGE = "Day of birth must be filled";
     public static final String ADDRESS_VALID_MESSAGE = "Address must be filled";
-    public static final String DURATION_VALID_MESSAGE = "Duration must be filled";
+    public static final String REFEREE_PARTICIPATION_VALID_MESSAGE = "Referee participation must be filled";
+
+    public static final String STAFF_PARTICIPATION_VALID_MESSAGE = "Staff participation must be filled";
+
+    public static final String PLAYER_PARTICIPATION_VALID_MESSAGE = "Player participation must be filled";
     public static final String EMAIL_VALID_MESSAGE = "Email must be filled";
     public static final String PASSWORD_VALID_MESSAGE = "Password must be filled";
     public static final String POSITION_VALID_MESSAGE = "Position must be filled";
@@ -42,4 +45,6 @@ public class ValidationMessage {
     public static final String HEIGHTCM_VALID_MESSAGE = "Height must be in range 100-300";
     public static final String WEIGHT_VALID_MESSAGE = "Height must be in range 100-300";
 
+    public static final String PLAYER_CONTRACT_VALID_MESSAGE = "Player Contract must be filled" ;
+    public static final String INLINEUPS_VALID_MESSAGE = "Inlineups must be filled" ;
 }

@@ -1,23 +1,26 @@
 package com.hungnln.vleague.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.hungnln.vleague.entity.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-@Data
-@ToString
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@ToString
 public class MatchParticipationResponse {
     private UUID matchId;
-    @JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
     private Match match;
+//    @JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
     private Collection<PlayerMatchParticipation> playerMatchParticipations;
+    private Collection<StaffMatchParticipation> staffMatchParticipations;
+    private Collection<RefereeMatchParticipation> refereeMatchParticipations;
+
 }
