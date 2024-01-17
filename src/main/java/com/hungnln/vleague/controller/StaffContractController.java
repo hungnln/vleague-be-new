@@ -40,12 +40,13 @@ public class StaffContractController {
             @RequestParam(defaultValue = "0") int pageIndex,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) UUID clubId,
-            @RequestParam(required = false) Date start,
-            @RequestParam(required = false) Date end,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end,
+            @RequestParam(required = false) String matchDate,
             @RequestParam(required = false,defaultValue = "true") Boolean includeEndedContracts
     ){
         ResponseDTO<ResponseWithTotalPage<StaffContractResponse>> responseDTO = new ResponseDTO<>();
-        ResponseWithTotalPage<StaffContractResponse> list = staffContractService.getAllStaffContracts(pageIndex, pageSize,clubId,start,end,includeEndedContracts);
+        ResponseWithTotalPage<StaffContractResponse> list = staffContractService.getAllStaffContracts(pageIndex, pageSize,clubId,start,end,includeEndedContracts,matchDate);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         responseDTO.setData(list);
         responseDTO.setMessage(StaffContractSuccessMessage.GET_STAFF_CONTRACT_SUCCESSFUL);

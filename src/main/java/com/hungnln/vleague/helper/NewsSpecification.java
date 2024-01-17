@@ -8,6 +8,9 @@ import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 import static com.hungnln.vleague.helper.SearchOperation.*;
 
 @AllArgsConstructor
@@ -27,6 +30,10 @@ public class NewsSpecification implements Specification<News> {
     @Override
     public Predicate toPredicate(Root<News> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         switch (criteria.getOperation()) {
+            case GREATER_THAN_OR_EQUAL_DATE:
+                return criteriaBuilder.greaterThanOrEqualTo(root.get(criteria.getKey()),(Timestamp) criteria.getValue());
+            case LESS_THAN_OR_EQUAL_DATE:
+                return criteriaBuilder.lessThanOrEqualTo(root.get(criteria.getKey()), (Date) criteria.getValue());
             case ISMEMBER:
                 return criteriaBuilder.isMember(criteria.getValue(), root.get(criteria.getKey()));
             case EQUALITY:

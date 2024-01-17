@@ -1,14 +1,18 @@
 package com.hungnln.vleague.service;
 
-import com.hungnln.vleague.DTO.MatchActivityCreateDTO;
-import com.hungnln.vleague.DTO.MatchCreateDTO;
-import com.hungnln.vleague.DTO.MatchUpdateDTO;
+import com.hungnln.vleague.DTO.*;
 import com.hungnln.vleague.constant.activity.ActivityType;
+import com.hungnln.vleague.constant.activity.PlayerMatchRole;
+import com.hungnln.vleague.constant.activity.RefereeMatchRole;
+import com.hungnln.vleague.constant.activity.StaffMatchRole;
 import com.hungnln.vleague.constant.club.ClubFailMessage;
 import com.hungnln.vleague.constant.match.MatchFailMessage;
 import com.hungnln.vleague.constant.match.MatchSuccessMessage;
+import com.hungnln.vleague.constant.player_contract.PlayerContractFailMessage;
+import com.hungnln.vleague.constant.referee.RefereeFailMessage;
 import com.hungnln.vleague.constant.round.RoundFailMessage;
 import com.hungnln.vleague.constant.stadium.StadiumFailMessage;
+import com.hungnln.vleague.constant.staff_contract.StaffContractFailMessage;
 import com.hungnln.vleague.constant.tournament.TournamentFailMessage;
 import com.hungnln.vleague.entity.*;
 import com.hungnln.vleague.entity.key.PlayerMatchParticipationKey;
@@ -16,6 +20,7 @@ import com.hungnln.vleague.entity.key.RefereeMatchParticipationKey;
 import com.hungnln.vleague.entity.key.StaffMatchParticipationKey;
 import com.hungnln.vleague.exceptions.ListEmptyException;
 import com.hungnln.vleague.exceptions.NotFoundException;
+import com.hungnln.vleague.exceptions.NotValidException;
 import com.hungnln.vleague.helper.MatchSpecification;
 import com.hungnln.vleague.helper.RoundSpecification;
 import com.hungnln.vleague.helper.SearchCriteria;
@@ -35,6 +40,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +63,12 @@ public class MatchService {
     private StaffMatchParticipationRepository staffMatchParticipationRepository;
     @Autowired
     private RefereeMatchParticipationRepository refereeMatchParticipationRepository;
+    @Autowired
+    private PlayerContractRepository playerContractRepository;
+    @Autowired
+    private StaffContractRepository staffContractRepository;
+    @Autowired
+    private RefereeRepository refereeRepository;
     private final ModelMapper modelMapper;
 
     public ResponseWithTotalPage<MatchResponse> getAllMatch(int pageNumber, int pageSize,UUID tournamentId,UUID stadiumId, UUID roundId){
@@ -213,4 +225,166 @@ public class MatchService {
             return MatchFailMessage.DELETE_MATCH_FAIL;
         }
     }
+    public MatchParticipationResponse addMatchLineups(UUID matchId, MatchLineupsCreateDTO dto){
+        Match match = matchRepository.findById(matchId).orElseThrow(()->new NotFoundException(MatchFailMessage.MATCH_NOT_FOUND));
+        List<PlayerMatchParticipation> playerMatchParticipationList = new ArrayList<>();
+        List<StaffMatchParticipation> staffMatchParticipationList = new ArrayList<>();
+        List<RefereeMatchParticipation> refereeMatchParticipationList =new ArrayList<>();
+        Club homeClub = match.getHomeClub();
+        Club awayClub = match.getAwayClub();
+        String homePlayerMsg = checkValidPlayer(dto.getPlayerParticipation(),homeClub);
+        String awayPlayerMsg = checkValidPlayer(dto.getPlayerParticipation(),awayClub);
+        String homeStaffMsg = checkValidStaff(dto.getStaffParticipation(),homeClub);
+        String awayStaffMsg = checkValidStaff(dto.getStaffParticipation(),awayClub);
+        String refereeMsg = checkValidReferee(dto.getRefereeParticipation());
+        String msg = homePlayerMsg + homeStaffMsg + awayPlayerMsg + awayStaffMsg + refereeMsg;
+        if (msg.isEmpty()){
+            for (PlayerParticipationDTO playerParticipationDTO : dto.getPlayerParticipation()){
+                PlayerContract playerContract = playerContractRepository.findPlayerContractById(playerParticipationDTO.getPlayerContractId()).orElseThrow(()-> new NotFoundException(PlayerContractFailMessage.PLAYER_CONTRACT_NOT_FOUND));
+                PlayerMatchParticipationKey participationKey = PlayerMatchParticipationKey.builder()
+                        .matchId(match.getId())
+                        .playerContractId(playerContract.getId())
+                        .build();
+                PlayerMatchParticipation playerMatchParticipation = PlayerMatchParticipation.builder()
+                        .id(participationKey)
+                        .playerContract(playerContract)
+                        .match(match)
+                        .inLineups(playerParticipationDTO.isInLineups())
+                        .role(PlayerMatchRole.lookup(playerParticipationDTO.getRole()))
+                        .build();
+               playerMatchParticipationList.add(playerMatchParticipation);
+            }
+            for (StaffParticipationDTO staffParticipationDTO : dto.getStaffParticipation()){
+                StaffContract staffContract = staffContractRepository.findStaffContractById(staffParticipationDTO.getStaffContractId()).orElseThrow(()-> new NotFoundException(StaffContractFailMessage.STAFF_CONTRACT_NOT_FOUND));
+                StaffMatchParticipationKey participationKey = StaffMatchParticipationKey.builder()
+                        .matchId(match.getId())
+                        .staffContractId(staffContract.getId())
+                        .build();
+                StaffMatchParticipation staffMatchParticipation = StaffMatchParticipation.builder()
+                        .id(participationKey)
+                        .staffContract(staffContract)
+                        .match(match)
+                        .role(StaffMatchRole.lookup(staffParticipationDTO.getRole()))
+                        .build();
+                staffMatchParticipationList.add(staffMatchParticipation);
+            }
+            for (RefereeParticipationDTO refereeParticipationDTO : dto.getRefereeParticipation()){
+                Referee referee = refereeRepository.findRefereeById(refereeParticipationDTO.getRefereeId()).orElseThrow(()-> new NotFoundException(RefereeFailMessage.REFEREE_NOT_FOUND));
+                RefereeMatchParticipationKey participationKey = RefereeMatchParticipationKey.builder()
+                        .matchId(match.getId())
+                        .refereeId(referee.getId())
+                        .build();
+                RefereeMatchParticipation refereeMatchParticipation = RefereeMatchParticipation.builder()
+                        .id(participationKey)
+                        .referee(referee)
+                        .match(match)
+                        .role(RefereeMatchRole.lookup(refereeParticipationDTO.getRole()))
+                        .build();
+                refereeMatchParticipationList.add(refereeMatchParticipation);
+            }
+        }else {
+            throw new NotValidException(msg);
+        }
+//        match.setStaffMatchParticipations(staffMatchParticipationList);
+//        match.setRefereeMatchParticipations(refereeMatchParticipationList);
+//        match.setPlayerMatchParticipations(playerMatchParticipationList);
+//        playerMatchParticipationRepository.saveAll(playerMatchParticipationList);
+//        staffMatchParticipationRepository.saveAll(staffMatchParticipationList);
+//        refereeMatchParticipationRepository.saveAll(refereeMatchParticipationList);
+        match.setStaffMatchParticipations(staffMatchParticipationList);
+        match.setRefereeMatchParticipations(refereeMatchParticipationList);
+        match.setPlayerMatchParticipations(playerMatchParticipationList);
+        matchRepository.save(match);
+        return modelMapper.map(match,MatchParticipationResponse.class);
+    }
+    private long countPlayers(List<PlayerParticipationDTO> playerParticipation, Club club, boolean inLineups) {
+        return playerParticipation.stream().filter(playerParticipationDTO -> {
+            PlayerContract playerContract = playerContractRepository
+                    .findPlayerContractById(playerParticipationDTO.getPlayerContractId())
+                    .orElseThrow(() -> new NotFoundException(PlayerContractFailMessage.PLAYER_CONTRACT_NOT_FOUND));
+            return playerContract.getClub().getId() == club.getId() && playerParticipationDTO.isInLineups() == inLineups;
+        }).count();
+    }
+    private long countGoalKeeper(List<PlayerParticipationDTO> playerParticipation, Club club, boolean inLineups) {
+        return playerParticipation.stream().filter(playerParticipationDTO -> {
+            PlayerContract playerContract = playerContractRepository
+                    .findPlayerContractById(playerParticipationDTO.getPlayerContractId())
+                    .orElseThrow(() -> new NotFoundException(PlayerContractFailMessage.PLAYER_CONTRACT_NOT_FOUND));
+            return playerContract.getClub().getId() == club.getId()&& playerParticipationDTO.isInLineups() == inLineups && PlayerMatchRole.lookup(playerParticipationDTO.getRole()) == PlayerMatchRole.GoalKeeper ;
+        }).count();
+    }
+
+    private long countStaff(List<StaffParticipationDTO> staffParticipation, Club club) {
+        return staffParticipation.stream().filter(staffParticipationDTO -> {
+            StaffContract staffContract = staffContractRepository
+                    .findStaffContractById(staffParticipationDTO.getStaffContractId())
+                    .orElseThrow(() -> new NotFoundException(StaffContractFailMessage.STAFF_CONTRACT_NOT_FOUND));
+            return staffContract.getClub().getId() == club.getId();
+        }).count();
+    }
+    private long countHeadCoach(List<StaffParticipationDTO> staffParticipation, Club club) {
+        return staffParticipation.stream().filter(staffParticipationDTO -> {
+            StaffContract staffContract = staffContractRepository
+                    .findStaffContractById(staffParticipationDTO.getStaffContractId())
+                    .orElseThrow(() -> new NotFoundException(StaffContractFailMessage.STAFF_CONTRACT_NOT_FOUND));
+            return staffContract.getClub().getId() == club.getId() && StaffMatchRole.lookup(staffParticipationDTO.getRole()) == StaffMatchRole.HeadCoach;
+        }).count();
+    }
+    private long countAssistantCoach(List<StaffParticipationDTO> staffParticipation, Club club) {
+        return staffParticipation.stream().filter(staffParticipationDTO -> {
+            StaffContract staffContract = staffContractRepository
+                    .findStaffContractById(staffParticipationDTO.getStaffContractId())
+                    .orElseThrow(() -> new NotFoundException(StaffContractFailMessage.STAFF_CONTRACT_NOT_FOUND));
+            return staffContract.getClub().getId() == club.getId() && StaffMatchRole.lookup(staffParticipationDTO.getRole()) == StaffMatchRole.AssistantCoach;
+        }).count();
+    }
+    private long countHeadReferee(List<RefereeParticipationDTO> refereeParticipation) {
+        return refereeParticipation.stream().filter(refereeParticipationDTO -> RefereeMatchRole.lookup(refereeParticipationDTO.getRole()) == RefereeMatchRole.HeadReferee).count();
+    }
+    private long countAssistantReferee(List<RefereeParticipationDTO> refereeParticipation) {
+        return refereeParticipation.stream().filter(refereeParticipationDTO -> RefereeMatchRole.lookup(refereeParticipationDTO.getRole()) == RefereeMatchRole.AssistantReferee).count();
+    }
+    private String checkValidPlayer(List<PlayerParticipationDTO> playerParticipation, Club club){
+        String msg ="";
+        long lineupsCount = countPlayers(playerParticipation,club,true);
+        long reverseCount = countPlayers(playerParticipation,club,false);
+        long goalKeeperCount = countGoalKeeper(playerParticipation,club,true);
+        if (lineupsCount == 11 & (reverseCount>=0 && reverseCount <=19) && goalKeeperCount==1 ){
+            return msg;
+        }else if (lineupsCount != 11){
+            msg+=club.getName()+" Lineups must have 11 players\n";
+        }else if (reverseCount<0 || reverseCount >19){
+            msg+=club.getName()+" Reverse must have 0 - 19 players\n";
+        }else {
+            msg+=club.getName()+" Goal keeper must have only 1 player\n";
+        }
+        return msg;
+    }
+    private String checkValidStaff(List<StaffParticipationDTO> staffParticipationDTO, Club club){
+        String msg ="";
+        long headCoachCount = countHeadCoach(staffParticipationDTO,club);
+        long assistantCoachCount = countAssistantCoach(staffParticipationDTO,club);
+        if (headCoachCount == 1 & assistantCoachCount >= 1 ){
+            return msg;
+        }else if (headCoachCount != 1){
+            msg+=club.getName()+" Head Coach must have only 1 staff\n";
+        }else {
+            msg+=club.getName()+" Assistant Coach must have staff \n";
+        }
+        return msg;
+    }
+    private String checkValidReferee(List<RefereeParticipationDTO> refereeParticipationDTO){
+        String msg ="";
+        long headRefereeCount = countHeadReferee(refereeParticipationDTO);
+        long assistantRefereeCount = countAssistantReferee(refereeParticipationDTO);
+        if (headRefereeCount == 1 & assistantRefereeCount >= 1 ){
+            return msg;
+        }else if (headRefereeCount != 1){
+            msg+=" Head Referee must have only 1 referee\n";
+        }else {
+            msg+=" Assistant Referee must have referee \n";
+        }
+        return msg;
+    }
+
 }

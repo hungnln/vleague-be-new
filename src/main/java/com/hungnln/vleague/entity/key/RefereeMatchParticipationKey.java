@@ -16,6 +16,6 @@ import java.util.UUID;
 public class RefereeMatchParticipationKey implements Serializable {
     @Column(name = "refereeid")
     private UUID refereeId;
-    @Column(name = "matchid")
+    @Column(name = "matchId")
     private UUID matchId;
 }

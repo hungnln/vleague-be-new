@@ -1,5 +1,6 @@
 package com.hungnln.vleague.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.*;
@@ -7,6 +8,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
@@ -35,7 +37,9 @@ public class StaffContract implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date end;
     private String description;
-
+    @OneToMany(mappedBy = "staffContract")
+    @JsonIgnore
+    private Collection<StaffMatchParticipation> staffMatchParticipations;
     @AssertTrue
     private boolean isValidDateRange() {
         return start.before(end);
