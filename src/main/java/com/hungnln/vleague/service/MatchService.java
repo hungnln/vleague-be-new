@@ -37,9 +37,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -118,6 +116,11 @@ public class MatchService {
             for (Match match :
                     pageResult.getContent()) {
                 MatchResponse matchResponse = modelMapper.map(match, MatchResponse.class);
+                List<MatchActivity> matchActivityList = matchActivityRepository.findAllByMatch(match);
+                int homeGoal = getMatchStatistic(matchActivityList,match.getHomeClub()).getOrDefault(ActivityType.Goal,0);
+                int awayGoal = getMatchStatistic(matchActivityList,match.getAwayClub()).getOrDefault(ActivityType.Goal,0);
+                matchResponse.setHomeGoals(homeGoal);
+                matchResponse.setAwayGoals(awayGoal);
                 matchList.add(matchResponse);
             }
         }
@@ -159,6 +162,10 @@ public class MatchService {
         List<MatchActivity> matchActivityList = matchActivityRepository.findAllByMatch(match);
         MatchResponse matchResponse = modelMapper.map(match,MatchResponse.class);
         matchResponse.setActivities(matchActivityList);
+        int homeGoal = getMatchStatistic(matchActivityList,match.getHomeClub()).getOrDefault(ActivityType.Goal,0);
+        int awayGoal = getMatchStatistic(matchActivityList,match.getAwayClub()).getOrDefault(ActivityType.Goal,0);
+        matchResponse.setHomeGoals(homeGoal);
+        matchResponse.setAwayGoals(awayGoal);
         return matchResponse;
     }
     public MatchParticipationResponse getMatchParticipationById(UUID matchId){
@@ -385,6 +392,23 @@ public class MatchService {
             msg+=" Assistant Referee must have referee \n";
         }
         return msg;
+    }
+    private Map<ActivityType, Integer> getMatchStatistic (List<MatchActivity> matchActivityList, Club club){
+        Map<ActivityType,Integer> typeCount = new HashMap<>();
+        matchActivityList.forEach(matchActivity -> {
+            int playerSize = matchActivity.getPlayerMatchParticipations().size();
+//            int staffSize = matchActivity.getStaffMatchParticipations().size();
+//            int refereeSize = matchActivity.getRefereeMatchParticipations().size();
+            if(playerSize > 0){
+                Optional<PlayerMatchParticipation> playerMatchParticipation = matchActivity.getPlayerMatchParticipations().stream().findFirst();
+                PlayerContract playerContract = playerMatchParticipation.get().getPlayerContract();
+                if(club.getId() == playerContract.getClub().getId()){
+                    typeCount.put(matchActivity.getType(),typeCount.getOrDefault(matchActivity.getType(),0)+1);
+                }
+
+            }
+        });
+        return typeCount;
     }
 
 }
