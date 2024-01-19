@@ -1,8 +1,10 @@
 package com.hungnln.vleague.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.hungnln.vleague.entity.*;
+import com.hungnln.vleague.entity.Club;
+import com.hungnln.vleague.entity.MatchActivity;
+import com.hungnln.vleague.entity.Round;
+import com.hungnln.vleague.entity.Stadium;
 import lombok.*;
 
 import java.util.Collection;
@@ -14,7 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MatchResponse {
+public class MatchDetailResponse {
     private UUID id;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
@@ -30,5 +32,5 @@ public class MatchResponse {
     private Round round;
     private int homeGoals;
     private int awayGoals;
-//    private Collection<MatchActivity> activities;
+    private Collection<MatchActivity> activities;
 }
