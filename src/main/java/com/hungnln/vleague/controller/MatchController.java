@@ -70,9 +70,9 @@ public class MatchController {
     }
     @GetMapping("/{id}")
     @Operation(summary ="Get match by id", description = "Get match by id")
-    ResponseEntity<ResponseDTO<MatchResponse>> findMatch(@PathVariable UUID id){
-        ResponseDTO<MatchResponse> responseDTO = new ResponseDTO<>();
-        MatchResponse matchResponse = matchService.findMatchById(id);
+    ResponseEntity<ResponseDTO<MatchDetailResponse>> findMatch(@PathVariable UUID id){
+        ResponseDTO<MatchDetailResponse> responseDTO = new ResponseDTO<>();
+        MatchDetailResponse matchResponse = matchService.findMatchById(id);
         responseDTO.setData(matchResponse);
         responseDTO.setMessage(MatchSuccessMessage.GET_MATCH_SUCCESSFUL);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
@@ -103,6 +103,16 @@ public class MatchController {
         ResponseDTO<MatchParticipationResponse> responseDTO = new ResponseDTO<>();
         MatchParticipationResponse matchParticipationResponse = matchService.getMatchParticipationById(id);
         responseDTO.setData(matchParticipationResponse);
+        responseDTO.setMessage(MatchSuccessMessage.GET_MATCH_SUCCESSFUL);
+        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+        return ResponseEntity.ok().body(responseDTO);
+    }
+    @GetMapping("/{id}/stats")
+    @Operation(summary ="Get match statistic by id", description = "Get match statistic by id")
+    ResponseEntity<ResponseDTO<MatchStatisticResponse>> getMatchStatistic(@PathVariable UUID id){
+        ResponseDTO<MatchStatisticResponse> responseDTO = new ResponseDTO<>();
+        MatchStatisticResponse matchStatisticResponse = matchService.getMatchStatisticById(id);
+        responseDTO.setData(matchStatisticResponse);
         responseDTO.setMessage(MatchSuccessMessage.GET_MATCH_SUCCESSFUL);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         return ResponseEntity.ok().body(responseDTO);

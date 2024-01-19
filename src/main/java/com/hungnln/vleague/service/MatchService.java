@@ -157,13 +157,21 @@ public class MatchService {
 //        matchRepository.save(match);
 //        return modelMapper.map(match,MatchResponse.class);
 //    }
-    public MatchResponse findMatchById(UUID matchId){
+    public MatchDetailResponse findMatchById(UUID matchId){
         Match match = matchRepository.findById(matchId).orElseThrow(()->new NotFoundException(MatchFailMessage.MATCH_NOT_FOUND));
-        List<MatchActivity> matchActivityList = matchActivityRepository.findAllByMatch(match);
-        MatchResponse matchResponse = modelMapper.map(match,MatchResponse.class);
-        matchResponse.setActivities(matchActivityList);
-        int homeGoal = getMatchStatistic(matchActivityList,match.getHomeClub()).getOrDefault(ActivityType.Goal,0);
-        int awayGoal = getMatchStatistic(matchActivityList,match.getAwayClub()).getOrDefault(ActivityType.Goal,0);
+//        List<MatchActivity> matchActivityList = matchActivityRepository.findAllByMatch(match);
+        MatchDetailResponse matchResponse = modelMapper.map(match,MatchDetailResponse.class);
+//        matchResponse.setActivities(matchActivityList);
+//        int homeGoal = getMatchStatistic(matchActivityList,match.getHomeClub()).getOrDefault(ActivityType.Goal,0);
+//        int awayGoal = getMatchStatistic(matchActivityList,match.getAwayClub()).getOrDefault(ActivityType.Goal,0);
+//        Map<UUID, Map<ActivityType, Integer>> matchStatistic =getMatchStatisticNew(match);
+//        int homeGoal = matchStatistic.getOrDefault(match.getHomeClub().getId(),new HashMap<>()).getOrDefault(ActivityType.Goal,0);
+//        int awayGoal = matchStatistic.getOrDefault(match.getAwayClub().getId(),new HashMap<>()).getOrDefault(ActivityType.Goal,0);
+
+        MatchStatisticResponse matchStatisticResponse = getMatchStatisticById(match.getId());
+        int homeGoal = matchStatisticResponse.getMatchStatistic().get(match.getHomeClub().getId()).get(ActivityType.Goal);
+        int awayGoal = matchStatisticResponse.getMatchStatistic().get(match.getAwayClub().getId()).get(ActivityType.Goal);
+
         matchResponse.setHomeGoals(homeGoal);
         matchResponse.setAwayGoals(awayGoal);
         return matchResponse;
@@ -410,5 +418,27 @@ public class MatchService {
         });
         return typeCount;
     }
+    public MatchStatisticResponse getMatchStatisticById(UUID matchId) {
+        Match match = matchRepository.findById(matchId).orElseThrow(()->new NotFoundException(MatchFailMessage.MATCH_NOT_FOUND));
 
+//        Map<UUID, Map<ActivityType, Integer>> matchStatistic = new HashMap<>();
+        MatchStatisticResponse response = new MatchStatisticResponse(match);
+        List<MatchActivity> matchActivityList = (List<MatchActivity>) match.getActivities();
+        matchActivityList.forEach(matchActivity -> {
+            int playerSize = matchActivity.getPlayerMatchParticipations().size();
+            if (playerSize > 0) {
+                Optional<PlayerMatchParticipation> playerMatchParticipation =
+                        matchActivity.getPlayerMatchParticipations().stream().findFirst();
+                PlayerContract playerContract = playerMatchParticipation.get().getPlayerContract();
+                UUID clubId = playerContract.getClub().getId();
+                response.getMatchStatistic().putIfAbsent(clubId, new HashMap<>());
+
+                response.getMatchStatistic().get(clubId)
+                        .put(matchActivity.getType(),response.getMatchStatistic().get(clubId)
+                                        .getOrDefault(matchActivity.getType(), 0) + 1);
+            }
+        });
+//        response.setDefaultValues();
+        return response;
+    }
 }
