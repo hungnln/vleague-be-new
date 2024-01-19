@@ -50,10 +50,9 @@ public class Match implements Serializable {
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "roundid")
     private Round round;
-//    @OneToMany(mappedBy = "match",cascade = CascadeType.ALL)
-//    @EqualsAndHashCode.Include
-//    @ToString.Include
-//    private Collection<MatchActivity> activities;
+    @OneToMany(mappedBy = "match",cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Collection<MatchActivity> activities;
 //    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @OneToMany(mappedBy = "match",cascade = CascadeType.ALL)
     @JsonIgnore
