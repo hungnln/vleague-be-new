@@ -89,4 +89,13 @@ public class TournamentController {
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         return ResponseEntity.ok().body(responseDTO);
     }
+    @GetMapping("/{id}/ranks")
+    ResponseEntity<ResponseDTO<TournamentRankingResponse>> getTournamentRanking(@PathVariable UUID id){
+        ResponseDTO<TournamentRankingResponse> responseDTO = new ResponseDTO<>();
+        TournamentRankingResponse tournamentRankingResponse = tournamentService.getTournamentRanking(id);
+        responseDTO.setData(tournamentRankingResponse);
+        responseDTO.setMessage(TournamentSuccessMessage.GET_TOURNAMENT_RANKING_SUCCESSFULL);
+        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+        return ResponseEntity.ok().body(responseDTO);
+    }
 }
