@@ -2,17 +2,18 @@ package com.hungnln.vleague.service;
 
 import com.hungnln.vleague.DTO.TournamentCreateDTO;
 import com.hungnln.vleague.DTO.TournamentUpdateDTO;
+import com.hungnln.vleague.constant.activity.ActivityType;
+import com.hungnln.vleague.constant.activity.ClubStandingRole;
 import com.hungnln.vleague.constant.tournament.TournamentFailMessage;
 import com.hungnln.vleague.constant.tournament.TournamentSuccessMessage;
+import com.hungnln.vleague.entity.Club;
+import com.hungnln.vleague.entity.Match;
 import com.hungnln.vleague.entity.Tournament;
 import com.hungnln.vleague.exceptions.ExistException;
 import com.hungnln.vleague.exceptions.ListEmptyException;
 import com.hungnln.vleague.exceptions.NotFoundException;
 import com.hungnln.vleague.repository.TournamentRepository;
-import com.hungnln.vleague.response.PaginationResponse;
-import com.hungnln.vleague.response.ResponseWithTotalPage;
-import com.hungnln.vleague.response.StaffResponse;
-import com.hungnln.vleague.response.TournamentResponse;
+import com.hungnln.vleague.response.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +23,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+
 @Service
 @RequiredArgsConstructor
 public class TournamentService  {
     @Autowired
     private TournamentRepository tournamentRepository;
+    @Autowired
+    private MatchService matchService;
     private final ModelMapper modelMapper;
 
     public ResponseWithTotalPage<TournamentResponse> getAllTournaments(int pageNo, int pageSize){
@@ -95,4 +96,74 @@ public class TournamentService  {
         tournamentRepository.save(tournament);
         return  modelMapper.map(tournament,TournamentResponse.class);
     }
+    public List<TournamentStandingResponse> getTournamentStanding(UUID id){
+        List<Match> matchList = matchService.getMatchListByTournament(id);
+        List<TournamentStandingResponse> list = new ArrayList<>();
+        matchList.forEach(match -> {
+            MatchStatisticResponse matchStatisticResponse = matchService.getMatchStatisticById(match.getId());
+            int homeGoal = matchStatisticResponse.getMatchStatistic().get(match.getHomeClub().getId()).get(ActivityType.Goal);
+            int awayGoal = matchStatisticResponse.getMatchStatistic().get(match.getAwayClub().getId()).get(ActivityType.Goal);
+            if (list.stream().noneMatch(response -> response.getClub().getId().equals(match.getHomeClub().getId()))) {
+                list.add(new TournamentStandingResponse(match.getHomeClub()));
+            }
+
+            // Check if awayClub is in the list, if not, add a new TournamentStandingResponse
+            if (list.stream().noneMatch(response -> response.getClub().getId().equals(match.getAwayClub().getId()))) {
+                list.add(new TournamentStandingResponse(match.getAwayClub()));
+            }
+            list.forEach(tournamentStandingResponse -> {
+                if (tournamentStandingResponse.getClub().getId() == match.getHomeClub().getId()) {
+                    int point = getMatchPoint(homeGoal, awayGoal, true);
+                    tournamentStandingResponse.setMp(tournamentStandingResponse.getMp() + 1);
+                    if (point == 3) {
+                        tournamentStandingResponse.setW(tournamentStandingResponse.getW() + 1);
+                        tournamentStandingResponse.addToLast5(ClubStandingRole.WIN);
+                    }else if (point ==1){
+                        tournamentStandingResponse.setD(tournamentStandingResponse.getD() + 1);
+                        tournamentStandingResponse.addToLast5(ClubStandingRole.DRAW);
+                    }else {
+                        tournamentStandingResponse.setL(tournamentStandingResponse.getL() + 1);
+                        tournamentStandingResponse.addToLast5(ClubStandingRole.LOSS);
+                    }
+                    tournamentStandingResponse.setGf(tournamentStandingResponse.getGf()+homeGoal);
+                    tournamentStandingResponse.setGa(tournamentStandingResponse.getGd()+awayGoal);
+                    tournamentStandingResponse.setGd(tournamentStandingResponse.getGf()- tournamentStandingResponse.getGa());
+                    tournamentStandingResponse.setPts(tournamentStandingResponse.getPts()+point);
+
+                } else if (tournamentStandingResponse.getClub().getId() == match.getAwayClub().getId()) {
+                    int point = getMatchPoint(homeGoal, awayGoal, false);
+                    tournamentStandingResponse.setMp(tournamentStandingResponse.getMp() + 1);
+                    if (point == 3) {
+                        tournamentStandingResponse.setW(tournamentStandingResponse.getW() + 1);
+                        tournamentStandingResponse.addToLast5(ClubStandingRole.WIN);
+                    }else if (point ==1){
+                        tournamentStandingResponse.setD(tournamentStandingResponse.getD() + 1);
+                        tournamentStandingResponse.addToLast5(ClubStandingRole.DRAW);
+                    }else {
+                        tournamentStandingResponse.setL(tournamentStandingResponse.getL() + 1);
+                        tournamentStandingResponse.addToLast5(ClubStandingRole.LOSS);
+                    }
+                    tournamentStandingResponse.setGf(tournamentStandingResponse.getGf()+awayGoal);
+                    tournamentStandingResponse.setGa(tournamentStandingResponse.getGd()+homeGoal);
+                    tournamentStandingResponse.setGd(tournamentStandingResponse.getGf()- tournamentStandingResponse.getGa());
+                    tournamentStandingResponse.setPts(tournamentStandingResponse.getPts()+point);
+                }
+            });
+        });
+        return list;
+    }
+    private int getMatchPoint(int homeGoal,int awayGoal,boolean isHome){
+        if (homeGoal<awayGoal){
+            if (isHome) return 0;
+            return 3;
+        }
+        else if (homeGoal==awayGoal){
+            return 1;
+        }
+        else{
+            if (isHome) return 3;
+            return 0;
+        }
+    }
+
 }

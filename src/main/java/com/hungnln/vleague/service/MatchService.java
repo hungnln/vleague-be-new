@@ -37,6 +37,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -185,6 +189,29 @@ public class MatchService {
         List<PlayerMatchParticipationKey> playerMatchParticipationKeyList = new ArrayList<>();
         List<StaffMatchParticipationKey> staffMatchParticipationKeyList = new ArrayList<>();
         List<RefereeMatchParticipationKey> refereeMatchParticipationKeyList = new ArrayList<>();
+        if(ActivityType.lookup(dto.getType()) == ActivityType.StartFirstHalf ||
+                ActivityType.lookup(dto.getType()) == ActivityType.EndFirstHalf ||
+                ActivityType.lookup(dto.getType()) == ActivityType.StartSecondHalf ||
+                ActivityType.lookup(dto.getType()) == ActivityType.EndSecondHalf ||
+                ActivityType.lookup(dto.getType()) == ActivityType.EndMatch
+        ){
+            int count = matchActivityRepository.countAllByMatchAndType(match,ActivityType.lookup(dto.getType()));
+            if (count >0){
+                String msq =  ActivityType.lookup(dto.getType())+ " is duplicate. Try again" ;
+                throw new NotValidException(msq);
+            }
+        }
+        if(ActivityType.lookup(dto.getType())==ActivityType.EndMatch){
+            List<MatchActivity> matchActivityList = matchActivityRepository.findAllByMatchAndType(match,ActivityType.ExtraTime);
+            LocalDateTime startDate = match.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            int extraMinute =0;
+            for (MatchActivity matchActivity:
+                 matchActivityList) {
+                extraMinute+=matchActivity.getMinuteInMatch();
+            }
+            LocalDateTime endDate = startDate.plus(extraMinute, ChronoUnit.MINUTES);
+            match.setEndDate(Date.from(endDate.atZone(ZoneId.systemDefault()).toInstant()));
+        }
         if(dto.getPlayerContractIds() != null && !dto.getPlayerContractIds().isEmpty()){
             for (UUID playerContractId:dto.getPlayerContractIds()){
                 PlayerMatchParticipationKey playerMatchParticipationKey =PlayerMatchParticipationKey.builder()
@@ -195,7 +222,7 @@ public class MatchService {
             }
         }
         List<PlayerMatchParticipation> playerMatchParticipationList = playerMatchParticipationRepository.findAllById(playerMatchParticipationKeyList);
-
+        checkValidPlayerParticipation(playerMatchParticipationList,dto);
 
         if(dto.getStaffContractIds()!= null && !dto.getStaffContractIds().isEmpty()){
             for (UUID staffContractId:dto.getStaffContractIds()){
@@ -440,5 +467,77 @@ public class MatchService {
         });
 //        response.setDefaultValues();
         return response;
+    }
+    public List<Match> getMatchListByTournament(UUID tournamentId){
+        List<Match> matchList = new ArrayList<>();
+        List<Specification<Match>> specificationList = new ArrayList<>();
+        List<Specification<Match>> specificationListSpecial = new ArrayList<>();
+        if(tournamentId != null){
+            Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow(()-> new NotFoundException(TournamentFailMessage.TOURNAMENT_NOT_FOUND));
+            RoundSpecification roundSpecification = new RoundSpecification(new SearchCriteria("tournament",SearchOperation.EQUALITY,tournament));
+            List<Round> roundList =  roundRepository.findAll(roundSpecification);
+            if (!roundList.isEmpty()){
+                for (Round round : roundList){
+                    MatchSpecification matchSpecification = new MatchSpecification(new SearchCriteria("round",SearchOperation.EQUALITY,round));
+                    specificationListSpecial.add(matchSpecification);
+                }
+            }else{
+                return  matchList;
+            }
+
+        }
+//            MatchSpecification specificationEnd = new MatchSpecification(new SearchCriteria("endDate",SearchOperation.NEGATION,null));
+        matchList = matchRepository.findAll(Specification.anyOf(specificationListSpecial)
+//                .and(specificationEnd)
+                , Sort.by(Sort.Direction.ASC, "startDate"));
+        return matchList;
+
+    }
+    private void checkValidPlayerParticipation(List<PlayerMatchParticipation> playerMatchParticipationList,MatchActivityCreateDTO dto){
+        List<MatchActivity> matchActivityList = matchActivityRepository.findAllByPlayerMatchParticipationsInAndMinuteInMatchBefore(playerMatchParticipationList, dto.getMinuteInMatch());
+        for (UUID playerContractId:dto.getPlayerContractIds()) {
+            int yellowCard=0;
+            int redCard =0;
+            boolean isInlineups =false;
+            boolean isSubstitution = false;
+            for (MatchActivity matchActivity: matchActivityList) {
+                for (PlayerMatchParticipation playerMatchParticipation: playerMatchParticipationList){
+                    if (playerContractId.equals(playerMatchParticipation.getPlayerContract().getId())){
+                       if (playerMatchParticipation.isInLineups()){
+                           isInlineups =true;
+                           if (matchActivity.getType() == ActivityType.YellowCard){
+                               yellowCard +=1;
+                           }
+                           else if (matchActivity.getType() == ActivityType.RedCard){
+                               redCard +=1;
+                           }
+                           else if (matchActivity.getType() == ActivityType.Substitution){
+                               isSubstitution = true;
+                           }
+                       }else {
+                           isInlineups = false;
+                           if (matchActivity.getType() == ActivityType.Substitution){
+                               isSubstitution=true;
+                           }
+                           else if (matchActivity.getType() == ActivityType.YellowCard){
+                               yellowCard +=1;
+                           }
+                           else if (matchActivity.getType() == ActivityType.RedCard){
+                               redCard +=1;
+                           }
+                       }
+
+                    }
+                }
+            }
+            if (yellowCard == 2 || redCard >0){
+                throw new NotValidException(playerContractId+ " got "+yellowCard+" yellow cards and "+redCard+" red card");
+            }
+            else if (isInlineups && isSubstitution){
+                throw new NotValidException(playerContractId+ " is substitution already");
+            }else if (!isInlineups && !isSubstitution){
+                throw new NotValidException(playerContractId+ " is not substitution");
+            }
+        }
     }
 }
