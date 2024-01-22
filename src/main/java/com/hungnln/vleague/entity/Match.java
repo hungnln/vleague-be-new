@@ -33,6 +33,7 @@ public class Match implements Serializable {
     private Date startDate;
     @Column(name = "enddate")
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)

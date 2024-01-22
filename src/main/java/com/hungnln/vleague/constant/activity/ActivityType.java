@@ -18,7 +18,8 @@ public enum ActivityType {
     StartSecondHalf,
     ExtraTime,
     EndSecondHalf,
-    EndMatch;
+    EndMatch,
+    Substitution;
     public static ActivityType lookup(int input){
         for (ActivityType type: values()){
             if (type.ordinal() == input) {

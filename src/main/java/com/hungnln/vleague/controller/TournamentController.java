@@ -5,10 +5,7 @@ import com.hungnln.vleague.DTO.TournamentUpdateDTO;
 import com.hungnln.vleague.constant.response.ResponseStatusDTO;
 import com.hungnln.vleague.constant.tournament.TournamentSuccessMessage;
 import com.hungnln.vleague.repository.TournamentRepository;
-import com.hungnln.vleague.response.ListResponseDTO;
-import com.hungnln.vleague.response.ResponseDTO;
-import com.hungnln.vleague.response.ResponseWithTotalPage;
-import com.hungnln.vleague.response.TournamentResponse;
+import com.hungnln.vleague.response.*;
 import com.hungnln.vleague.service.TournamentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,6 +77,15 @@ public class TournamentController {
         ResponseDTO<TournamentResponse> responseDTO = new ResponseDTO<>();
         String msg = tournamentService.deleteTournament(id);
         responseDTO.setMessage(msg);
+        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+        return ResponseEntity.ok().body(responseDTO);
+    }
+    @GetMapping("/{id}/standings")
+    ResponseEntity<ResponseDTO<List<TournamentStandingResponse>>> getTournamentStading(@PathVariable UUID id){
+        ResponseDTO<List<TournamentStandingResponse>> responseDTO = new ResponseDTO<>();
+        List<TournamentStandingResponse> list = tournamentService.getTournamentStanding(id);
+        responseDTO.setData(list);
+        responseDTO.setMessage(TournamentSuccessMessage.GET_TOURNAMENT_STANDING_SUCCESSFULL);
         responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
         return ResponseEntity.ok().body(responseDTO);
     }
