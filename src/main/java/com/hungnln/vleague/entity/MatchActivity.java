@@ -19,7 +19,7 @@ public class  MatchActivity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name ="matchid")
     private Match match;
@@ -30,7 +30,7 @@ public class  MatchActivity {
 //    @Temporal(TemporalType.TIME)
 //    @Column(name = "time")
 //    private Date time;
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "matchactivityplayermatchparticipation",
             joinColumns = @JoinColumn(name = "activitiesid"),
@@ -40,7 +40,7 @@ public class  MatchActivity {
 
             })
     private Collection<PlayerMatchParticipation> playerMatchParticipations;
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "matchactivitystaffmatchparticipation",
             joinColumns = @JoinColumn(name = "activitiesid"),
@@ -49,7 +49,7 @@ public class  MatchActivity {
                     @JoinColumn(name = "staffinvolvedstaffcontractid")
             })
     private Collection<StaffMatchParticipation> staffMatchParticipations;
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "matchactivityrefereematchparticipation",
             joinColumns = @JoinColumn(name = "activitiesid"),
