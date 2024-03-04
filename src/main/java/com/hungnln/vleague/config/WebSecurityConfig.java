@@ -97,7 +97,7 @@ public class WebSecurityConfig {
                  .httpBasic(AbstractHttpConfigurer::disable)
                  .formLogin(AbstractHttpConfigurer::disable)
 //                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> authException))
-                 .cors(cor->cor.configurationSource(corsConfig.corsConfigurationSource()))
+//                 .cors(cor->cor.configurationSource(corsConfig.corsConfigurationSource()))
                  .csrf(AbstractHttpConfigurer::disable)
                  .logout(AbstractHttpConfigurer::disable);
         http
