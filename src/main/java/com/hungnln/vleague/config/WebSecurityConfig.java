@@ -1,49 +1,27 @@
 package com.hungnln.vleague.config;
 
 import com.hungnln.vleague.constant.response.ResponseStatusDTO;
-import com.hungnln.vleague.entity.Account;
-import com.hungnln.vleague.entity.CustomUserDetails;
-import com.hungnln.vleague.exceptions.AccessDeniedException;
 import com.hungnln.vleague.exceptions.CustomAccessDeniedHandler;
 import com.hungnln.vleague.exceptions.CustomAuthenticationFailureHandler;
 import com.hungnln.vleague.jwt.JwtAuthenticationFilter;
-import com.hungnln.vleague.repository.AccountRepository;
-import com.hungnln.vleague.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.PrintWriter;
-import java.util.Objects;
 
-import static com.hungnln.vleague.constant.account.AccountFailMessage.USER_NOT_FOUND;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @EnableWebSecurity
@@ -57,6 +35,7 @@ public class WebSecurityConfig {
 
 //    private final UserService userService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CorsConfig corsConfig;
     private static final String[] AUTH_WHITELIST = {
             // -- Swagger UI v2
             "/v2/api-docs",
@@ -118,7 +97,7 @@ public class WebSecurityConfig {
                  .httpBasic(AbstractHttpConfigurer::disable)
                  .formLogin(AbstractHttpConfigurer::disable)
 //                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> authException))
-                 .cors(Customizer.withDefaults())
+                 .cors(cor->cor.configurationSource(corsConfig.corsConfigurationSource()))
                  .csrf(AbstractHttpConfigurer::disable)
                  .logout(AbstractHttpConfigurer::disable);
         http
@@ -142,20 +121,18 @@ public class WebSecurityConfig {
                                 "\"message\": \"Access Denied: " + accessDeniedException.getMessage() + "\" }");
                     })
                      )
-//                .exceptionHandling(e->
-//                        e.authenticationEntryPoint((request, response, authException) -> {
-//                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-//                            response.setContentType("application/json");
-//                            PrintWriter writer = response.getWriter();
-//                            writer.println("{ " +
-//                                    "\"status\": \"" + ResponseStatusDTO.FAILURE + "\"," +
-//                                    "\"message\": \"Authorize: " + authException.getMessage() + "\" }");
-//
-//                        })
-//                )
-                .authenticationManager(authenticationManagerBean)
-        ;
+                .exceptionHandling(e->
+                        e.authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType("application/json");
+                            PrintWriter writer = response.getWriter();
+                            writer.println("{ " +
+                                    "\"status\": \"" + ResponseStatusDTO.FAILURE + "\"," +
+                                    "\"message\": \"Authorize: " + authException.getMessage() + "\" }");
 
+                        })
+                )
+                .authenticationManager(authenticationManagerBean);
          return http.build();
     }
 
