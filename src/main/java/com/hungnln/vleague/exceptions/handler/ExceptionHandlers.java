@@ -6,11 +6,13 @@ import com.hungnln.vleague.response.ListResponseDTO;
 import com.hungnln.vleague.response.ResponseDTO;
 import com.hungnln.vleague.constant.response.ResponseStatusDTO;
 import com.hungnln.vleague.response.ResponseWithTotalPage;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.ArrayList;
@@ -77,5 +79,19 @@ public class ExceptionHandlers extends RuntimeException{
         dto.setStatus(ResponseStatusDTO.FAILURE);
         dto.setData(errors);
         return ResponseEntity.badRequest().body(dto);
+    }
+    @ExceptionHandler(value = AuthenticationException.class)
+    public ResponseEntity<Object> handleAuthenticationException(Exception exception) {
+        ResponseDTO dto = new ResponseDTO();
+        dto.setMessage(exception.getMessage());
+        dto.setStatus(ResponseStatusDTO.FAILURE);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(dto);
+    }
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(Exception exception) {
+        ResponseDTO dto = new ResponseDTO();
+        dto.setMessage(exception.getMessage());
+        dto.setStatus(ResponseStatusDTO.FAILURE);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(dto);
     }
 }

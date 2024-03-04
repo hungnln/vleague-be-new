@@ -1,53 +1,90 @@
 package com.hungnln.vleague.controller;
-import com.hungnln.vleague.entity.Account;
+import com.hungnln.vleague.DTO.ClubCreateDTO;
+import com.hungnln.vleague.DTO.ClubUpdateDTO;
+import com.hungnln.vleague.constant.account.AccountSuccessMessage;
+import com.hungnln.vleague.constant.club.ClubSuccessMessage;
+import com.hungnln.vleague.constant.response.ResponseStatusDTO;
 import com.hungnln.vleague.repository.AccountRepository;
+import com.hungnln.vleague.response.AccountResponse;
+import com.hungnln.vleague.response.ClubResponse;
+import com.hungnln.vleague.response.ResponseDTO;
+import com.hungnln.vleague.response.ResponseWithTotalPage;
 import com.hungnln.vleague.service.AccountService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1.0/accounts")
-
+@RequestMapping("/api/v1/accounts")
+@Tag(name = "account", description = "account api")
+@RequiredArgsConstructor
 public class AccountController {
-    public static Logger logger = LoggerFactory.getLogger(AccountController.class);
-    @Autowired
-    private AccountRepository accountRepository;
-    @Autowired
-    private AccountService accountService;
-//
-//    @RequestMapping(value = "", method = RequestMethod.GET)
-//    ResponseEntity<ResponseObject> getAllAccounts(){
-//        List<Account> listAccount=accountService.getAllAccounts();
-//        return ResponseEntity.status(HttpStatus.OK).body(
-//                new ResponseObject("ok","Get all accounts success",listAccount)
-//        );
+    private final Logger logger = LoggerFactory.getLogger(AccountController.class);
+    private final AccountRepository accountRepository;
+    private final AccountService accountService;
+
+    @GetMapping("")
+    @Operation(summary = "Get account list", description = "Get account list")
+    ResponseEntity<ResponseDTO<ResponseWithTotalPage<AccountResponse>>> getAllAccounts(
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "") String isBanned
+
+    ) {
+        ResponseDTO<ResponseWithTotalPage<AccountResponse>> responseDTO = new ResponseDTO<>();
+        ResponseWithTotalPage<AccountResponse> list = accountService.getAllAccounts(pageIndex,pageSize,isBanned);
+        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+        responseDTO.setData(list);
+        responseDTO.setMessage(AccountSuccessMessage.GET_ALL_SUCCESSFULL);
+        return ResponseEntity.ok().body(responseDTO);
+    }
+    @GetMapping("/{id}")
+    ResponseEntity<ResponseDTO<AccountResponse>> getAccountById(@PathVariable UUID id) {
+        ResponseDTO<AccountResponse> responseDTO = new ResponseDTO<>();
+        AccountResponse account = accountService.getAccountById(id);
+        responseDTO.setData(account);
+        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+        responseDTO.setMessage(AccountSuccessMessage.GET_ACCOUNT_SUCCESSFULL);
+        return ResponseEntity.ok().body(responseDTO);
+    }
+
+//    @PostMapping("")
+//    ResponseEntity<ResponseDTO<ClubResponse>> addClub(@RequestBody @Valid ClubCreateDTO dto) throws BindException {
+//        ResponseDTO<ClubResponse> responseDTO = new ResponseDTO<>();
+//        ClubResponse club = clubService.addClub(dto);
+//        responseDTO.setData(club);
+//        responseDTO.setMessage(ClubSuccessMessage.CREATE_CLUB_SUCCESSFULL);
+//        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+//        return ResponseEntity.ok().body(responseDTO);
 //    }
-//    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-//    ResponseEntity<ResponseObject> findById(@PathVariable String id){
-//        Optional<Account> foundAccount = accountRepository.findById(id);
-//        if(foundAccount.isPresent()){
-//            return ResponseEntity.status(HttpStatus.OK).body(
-//                    new ResponseObject("ok","Get account detail success",foundAccount)
-//            );
-//        }else{
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-//                    new ResponseObject("false","Cannot find account with id"+id,"")
-//            );
-//        }
-//    }
 
+    @PutMapping("/{id}")
+    ResponseEntity<ResponseDTO<AccountResponse>> updateAccountStatus(@PathVariable UUID id, @RequestParam boolean isBanned) {
+        ResponseDTO<AccountResponse> responseDTO = new ResponseDTO<>();
+        AccountResponse account = accountService.changeAccountStatus(id, isBanned);
+        responseDTO.setData(account);
+        responseDTO.setMessage(AccountSuccessMessage.UPDATE_ACCOUNT_SUCCESSFULL);
+        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+        return ResponseEntity.ok().body(responseDTO);
 
+    }
 
-//    @RequestMapping(value = "/new", method = RequestMethod.POST)
-//    ResponseEntity<ResponseObject>createAccount(@Validated @RequestBody Account account) {
-//            return accountRepository.save(account);
+//    @DeleteMapping("/{id}")
+//    ResponseEntity<ResponseDTO<ClubResponse>> deleteClub(@PathVariable UUID id) {
+//        ResponseDTO<ClubResponse> responseDTO = new ResponseDTO<>();
+//        String msg = clubService.deleteClub(id);
+//        responseDTO.setMessage(msg);
+//        responseDTO.setStatus(ResponseStatusDTO.SUCCESS);
+//        return ResponseEntity.ok().body(responseDTO);
 //    }
 
 }
