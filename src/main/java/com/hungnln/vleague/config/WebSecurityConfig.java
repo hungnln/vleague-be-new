@@ -5,6 +5,7 @@ import com.hungnln.vleague.exceptions.CustomAccessDeniedHandler;
 import com.hungnln.vleague.exceptions.CustomAuthenticationFailureHandler;
 import com.hungnln.vleague.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -19,8 +20,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
@@ -35,7 +40,8 @@ public class WebSecurityConfig {
 
 //    private final UserService userService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CorsConfig corsConfig;
+    @Value("${allowed.origin}")
+    private String allowedOrigin;
     private static final String[] AUTH_WHITELIST = {
             // -- Swagger UI v2
             "/v2/api-docs",
@@ -86,6 +92,17 @@ public class WebSecurityConfig {
     public AuthenticationFailureHandler authenticationFailureHandler() {
         return new CustomAuthenticationFailureHandler();
     }
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList(allowedOrigin));
+//        configuration.setMaxAge(4800L);
+//        configuration.setAllowedHeaders(Arrays.asList("*"));
+//        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
@@ -94,10 +111,11 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,AuthenticationManager authenticationManagerBean) throws Exception {
          http
-                 .httpBasic(AbstractHttpConfigurer::disable)
+                 .httpBasic(Customizer.withDefaults())
                  .formLogin(AbstractHttpConfigurer::disable)
 //                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> authException))
-//                 .cors(cor->cor.configurationSource(corsConfig.corsConfigurationSource()))
+//                 .cors(cor->cor.configure(corsConfig.getCorsConfiguration()))
+                 .cors(Customizer.withDefaults())
                  .csrf(AbstractHttpConfigurer::disable)
                  .logout(AbstractHttpConfigurer::disable);
         http

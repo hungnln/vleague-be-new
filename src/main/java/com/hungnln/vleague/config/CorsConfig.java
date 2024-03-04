@@ -13,8 +13,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.Arrays;
 
 @Configuration
-@EnableWebMvc
-public class CorsConfig {
+//@EnableWebMvc
+public class CorsConfig implements WebMvcConfigurer {
     private static final String[] AUTH_WHITELIST = {
             "/authenticate",
             "/swagger-resources/**",
@@ -24,29 +24,26 @@ public class CorsConfig {
     };
     @Value("${allowed.origin}")
     private String allowedOrigin;
-
-    @Bean
-    public WebMvcConfigurer getCorsConfiguration() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins(allowedOrigin)
-                        .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                        .allowedOrigins(allowedOrigin,"https://vleaguev1.netlify.app")
+                        .allowedMethods("*")
                         .allowedHeaders("*")
                         .maxAge(4800);
-            }
-        };
     }
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigin));
-        configuration.setMaxAge(4800L);
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+//    @Bean
+//    public WebMvcConfigurer getCorsConfiguration() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins(allowedOrigin)
+//                        .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
+//                        .allowedHeaders("*")
+//                        .maxAge(4800);
+//            }
+//        };
+//    }
+
 }
