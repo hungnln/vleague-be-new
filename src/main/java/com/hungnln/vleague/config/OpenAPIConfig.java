@@ -1,5 +1,7 @@
 package com.hungnln.vleague.config;
 
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -45,13 +47,17 @@ public class OpenAPIConfig {
                 .description("This API exposes endpoints to manage vleague.").termsOfService("https://www.hungnln.com/terms")
                 .license(mitLicense);
         SecurityScheme securityScheme = new SecurityScheme()
-                .name("Bearer Authentication")
+                .name("Authorization")
                 .type(SecurityScheme.Type.HTTP)
+                .in(SecurityScheme.In.HEADER)
                 .bearerFormat("JWT")
                 .scheme("bearer");
         return new OpenAPI()
                 .info(info)
-                .schemaRequirement("Bearer Authentication",securityScheme)
+//                .schemaRequirement("Bearer Authentication",securityScheme)
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
                 .servers(List.of(devServer, prodServer));
+
     }
 }

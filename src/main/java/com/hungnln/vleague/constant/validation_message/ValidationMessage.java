@@ -28,7 +28,7 @@ public class ValidationMessage {
     public static final String STAFF_PARTICIPATION_VALID_MESSAGE = "Staff participation must be filled";
 
     public static final String PLAYER_PARTICIPATION_VALID_MESSAGE = "Player participation must be filled";
-    public static final String EMAIL_VALID_MESSAGE = "Email must be filled";
+    public static final String USERNAME_VALID_MESSAGE = "Username must be filled";
     public static final String PASSWORD_VALID_MESSAGE = "Password must be filled";
     public static final String POSITION_VALID_MESSAGE = "Position must be filled";
     public static final String CANDIDATE_ID_VALID_MESSAGE = "Candidate must be assigned";
