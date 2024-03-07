@@ -79,17 +79,15 @@ public class NewsService {
                 NewsResponse newsResponse = modelMapper.map(news, NewsResponse.class);
                 newsList.add(newsResponse);
             }
-            response.setData(newsList);
-            PaginationResponse paginationResponse = PaginationResponse.builder()
-                    .pageIndex(pageResult.getNumber())
-                    .pageSize(pageResult.getSize())
-                    .totalCount((int) pageResult.getTotalElements())
-                    .totalPage(pageResult.getTotalPages())
-                    .build();
-            response.setPagination(paginationResponse);
-        }else{
-            throw new ListEmptyException(ClubFailMessage.LIST_CLUB_IS_EMPTY);
         }
+        response.setData(newsList);
+        PaginationResponse paginationResponse = PaginationResponse.builder()
+                .pageIndex(pageResult.getNumber())
+                .pageSize(pageResult.getSize())
+                .totalCount((int) pageResult.getTotalElements())
+                .totalPage(pageResult.getTotalPages())
+                .build();
+        response.setPagination(paginationResponse);
         return response;
     }
     public NewsResponse addNews(NewsCreateDTO newsCreateDTO){
